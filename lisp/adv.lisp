@@ -16,6 +16,16 @@
   ((navigation  :accessor navigation   :initarg :navigation :initform '())))
 
 
+(defclass Located ()
+  ((location    :accessor location    :initarg :location)))
+
+(defclass Player (Describable Inventory Located)
+  ())
+
+(defclass Item (Describable Located)
+  ())
+
+
 (defclass Navigation ()
   ((name  :accessor name   :initarg :name)
    (destination :accessor destination :initarg :destination)))
@@ -27,15 +37,6 @@
            (format *standard-output* "~% With inventory:~{~%  ~a~}." (mapcar #'description (inventory l))))
 
   (:method ((i Inventory)) (format *standard-output* "Inventory for ~s: ~{~%  ~a~}." (description i) (mapcar #'description (inventory i)))))
-
-(defclass Player (Describable Inventory)
-  ((location    :accessor location    :initarg :location)))
-
-(defclass Located ()
-  ((location    :accessor location    :initarg :location)))
-
-(defclass Item (Describable Located)
-  ())
 
 (defgeneric move (Player List)
   (:documentation "Move the player somewhere based on some description of a direction")
@@ -120,8 +121,8 @@
 (defgeneric move-object (ob source destination)
   (:method-combination progn))
 
-(defmethod move-object progn ((ob t) (source Located) (destination t))
-  (setf (location source) destination) )
+(defmethod move-object progn ((ob Located) (source t) (destination t))
+  (setf (location ob) destination) )
   
 (defmethod move-object  progn ((ob t) (source Inventory) (destination Inventory))
   (remove-from-inventory ob source)
