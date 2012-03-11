@@ -31,8 +31,11 @@
 (defclass Player (Describable Inventory)
   ((location    :accessor location    :initarg :location)))
 
-(defclass Item (Describable)
+(defclass Located ()
   ((location    :accessor location    :initarg :location)))
+
+(defclass Item (Describable Located)
+  ())
 
 (defgeneric move (Player List)
   (:documentation "Move the player somewhere based on some description of a direction")
@@ -44,15 +47,13 @@
              (dolist (nav  navigation)
                (when (string-equal (name nav) direction)
                  (move-object p location (destination nav))
-                 (setf (location p) (destination nav))
-                 ;; XXX Should If the moved object has a location, it
-                 ;; should be automatically updated by move-object.
                  (return-from move)))
              (if (not (null direction))
                  (format *standard-output* "Don't know how to go ~{~s~^ ~}" l)))))
+;;
+;; The actual game objects. For testing, not playing (obviously)
+;;
 
-;; The actual game objects
-  
 (defvar *initial-location* (make-instance 'Location :description "The start"))
 (defvar *goal-location*    (make-instance 'Location :description "The goal"))
 (defvar *initial-item*     (make-instance 'Item     :description "An item"))
@@ -78,7 +79,7 @@
   (catch 'escape-from-game 
     (loop
      (format *standard-output* "~% Game>")
-     (parse-wordlist (parse-line (read-command-from-user))))))
+     (parse-wordlist (split-string-to-words (read-command-from-user))))))
 
 
 
@@ -86,13 +87,14 @@
   "Read a simple line from the command line"
   (read-line))
 
-(defun parse-line (l)
-  "Take a line that has been read from the command line as an input,
-   split it into tokens and interpret it as a game command"
-  (declare (string l))
-  (let ((pl  (REGEXP:REGEXP-SPLIT " " l)))
-    pl))
+(defun split-string-to-words (line)
+  (REGEXP:REGEXP-SPLIT " "  line))
 
+
+
+;;
+;;  A command interpreter
+;;
 
 (defclass Command ()
   ((names :accessor names :initarg :names)))
@@ -116,19 +118,18 @@
 
 
 (defgeneric move-object (ob source destination)
-  (:method ((ob t) (source Inventory) (destination Inventory))
-           (when (and (member ob (inventory source))
-                      (not (member ob (inventory destination))))
-             (format *standard-output* "~% Moving object ~s from ~s to ~s" ob source destination)
-             (remove-from-inventory ob source)
-             (add-to-inventory ob destination)
-             (format *standard-output* "~% moved object ~s from ~s to ~s" ob source destination))))
-             
+  (:method-combination progn))
+
+(defmethod move-object progn ((ob t) (source Located) (destination t))
+  (setf (location source) destination) )
+  
+(defmethod move-object  progn ((ob t) (source Inventory) (destination Inventory))
+  (remove-from-inventory ob source)
+  (add-to-inventory ob destination))
 
 
 (defun find-and-move (query source destination)
   (let ((objects  (identify query (inventory source))))
-    (format *standard-output* "~% Identified objects = ~S" objects)
     (cond ((= 1 (length objects))
            (move-object (first objects) source destination)
            (format *standard-output* "~% Got it"))
@@ -169,7 +170,7 @@
 
 (defparameter *commands*
   (list
-   (make-instance 'InventoryCmd :names '("inventory" "inv"))
+   (make-instance 'InventoryCmd :names '("inventory" "inv" "list"))
    (make-instance 'LookCmd      :names '("look" "peek" "see" "glance"))
    (make-instance 'GoCmd        :names '("go" "move" "run" "jump" "crawl"))
    (make-instance 'TakeCmd      :names '("take" "grab"))
@@ -181,6 +182,7 @@
    (apply #'append (mapcar #'names *commands*)))
 
 (defun find-command (name &optional (commands *commands*))
+  "Find a command matching a name"
   (find-if #'(lambda (names) (find  name names :test #'string-equal))
            commands :key #'names))
 
@@ -189,14 +191,11 @@
     (if (not (null cmd))
         (applyCmd cmd *current-player* wl))))
 
+;;
+;;  The search engine  ;)
+;;
 
 (defparameter *stopwords* '("the" "at" "an"))
-
-(defun remove-all-x (l r &key (test #'eql))
-  (loop for i in l
-        unless (find i r :test test)
-        collect i))
-
 
 (defgeneric matches (List t)
   (:documentation "Describe something for a user")
@@ -208,8 +207,13 @@
   
   (:method ((query List) (object Describable))
            (matches query
-                    (REGEXP:REGEXP-SPLIT " " (description object)))))
+                    (split-string-to-words (description object)))))
 
+
+(defun remove-all-x (l r &key (test #'eql))
+  (loop for i in l
+        unless (find i r :test test)
+        collect i))
 
 (defun identify (query objects)
   "Identify the objects described by the query in the list of objects,
