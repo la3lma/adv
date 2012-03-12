@@ -43,7 +43,8 @@
   ((location    :accessor location    :initarg :location)))
 
 (defclass Player (Describable Inventory Located)
-  ((out-stream :accessor out-stream :initarg :out-stream :initform *standard-output*)))
+  ((out-stream :accessor out-stream :initarg :out-stream :initform *standard-output*)
+   (in-stream :accessor in-stream :initarg :in-stream :initform *standard-output*)))
 
 (defclass Item (Describable Located)
   ())
@@ -102,17 +103,18 @@
 ;;; COMMAND LINE PARSER
 ;;;
 
-(defun game-repl ()
+(defun game-repl (&key (input *standard-input* ) (output *standard-output*) (player *current-player*))
   "The main loop"
-  (catch 'escape-from-game 
+
+  (setf (out-stream player) output)
+  (setf (in-stream  player) input)
     (loop
-     (format (out-stream *current-player*) "~% Game>")
-     (parse-wordlist (split-string-to-words (read-command-from-user))))))
+     (format (out-stream player) "~% Adv>")
+     (parse-wordlist (split-string-to-words (read-command-from-user :input input)))))
 
-
-(defun read-command-from-user ()
+(defun read-command-from-user (&key (input *standard-input*))
   "Read a simple line from the command line"
-  (read-line))
+  (read-line input))
 
 (defun split-string-to-words (line)
   (REGEXP:REGEXP-SPLIT " "  line))
@@ -170,7 +172,7 @@
   (:documentation "Apply a command to a player with some input parameters")
 
   (:method ((c TakeCmd) (p Player) (query List))
-           (find-and-move (out-stream p) query (location p) p) "Got it")
+           (find-and-move (out-stream p) query (location p) p "Got it"))
 
   (:method ((c DropCmd) (p Player) (query List))
            (find-and-move (out-stream p) query p (location p) "Dropped"))
@@ -191,6 +193,7 @@
              (format (out-stream p) "~% Available commands are: ~{~s~^ ~}." (available-commands)))
     
     (:method ((c QuitCmd) (p Player) (l List))
+             (format (out-stream p) "~% Ttfn~2%")
              (throw 'escape-from-game 'user-quit)))
 
 (defparameter *commands*
@@ -254,7 +257,51 @@
         when (matches query ob)
         collect ob))
 
+;;
+;;  Setting up a server
+;;
+
+;; The server must allow some kind of login, and then that
+;; login session has to be hooked up to users of various kinds,
+;; then I guess we can just let it rip.
 
 
 
-  
+;; This is what I want
+;; (defun run-as-server () 
+;;   (let ((server (port:open-socket-server 4141)))
+;;     (loop
+     
+;;      ;; Listen for incoming connections
+;;      (let ((socket (socket-accept server)))
+       
+;;        ;; Spawn a process to handle the connection
+;;        (make-process "Connection handler"
+;;                      #'handle-connection
+;;                      socket))
+     
+;;      ;; The main process is now free to accept a new connection
+;;      )))
+
+;; This is what I need to do in clisp
+(defun run-repl-as-server ()
+  (LET ((server (SOCKET:SOCKET-SERVER)))
+       (FORMAT t "~&Waiting for a connection on ~S:~D~%"
+               (SOCKET:SOCKET-SERVER-HOST server) (SOCKET:SOCKET-SERVER-PORT server))
+       (catch 'escape-from-game
+         (UNWIND-PROTECT
+          ;; infinite loop, terminate with Control+C
+          (LOOP (WITH-OPEN-STREAM (socket (SOCKET:SOCKET-ACCEPT server))
+                                  (MULTIPLE-VALUE-BIND (local-host local-port) (SOCKET:SOCKET-STREAM-LOCAL socket)
+                                                       (MULTIPLE-VALUE-BIND (remote-host remote-port) (SOCKET:SOCKET-STREAM-PEER socket)
+                                                                            (FORMAT T "~&Connection: ~S:~D -- ~S:~D~%"
+                                                                                    remote-host remote-port local-host local-port)))
+                                  ;; loop is terminated when the remote host closes the connection or on EXT:EXIT
+                                  (LOOP (WHEN (EQ :eof (SOCKET:SOCKET-STATUS (cons socket :input))) (RETURN))
+                                        ;                                      (PRINT (EVAL (READ socket)) socket)
+                                        (game-repl :input socket :output socket)
+                                        ;; flush everything left in socket
+                                        (LOOP :for c = (READ-CHAR-NO-HANG socket nil nil) :while c)
+                                        (TERPRI socket))))
+          ;; make sure server is closed
+          (SOCKET:SOCKET-SERVER-CLOSE server)))))
