@@ -1,5 +1,28 @@
 ;; -*-LISP-*-
 
+;;
+;; Copyright 2012 Bjørn Remseth (rmz@rmz.no)
+;;
+;;  Licensed under the Apache License, Version 2.0 (the "License");
+;;  you may not use this file except in compliance with the License.
+;;  You may obtain a copy of the License at
+;;
+;;       http://www.apache.org/licenses/LICENSE-2.0
+;;
+;;  Unless required by applicable law or agreed to in writing, software
+;;  distributed under the License is distributed on an "AS IS" BASIS,
+;;  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+;;  See the License for the specific language governing permissions and
+;;  limitations under the License.
+;;
+
+
+;; This is a small unpretentious implementation of a seventies
+;; style text adventure.  It's written just for fun and to
+;; get to play a bit with my old friend Common Lisp again.
+
+
+
 ;;;
 ;;; THE GAME MODEL
 ;;;
@@ -20,7 +43,7 @@
   ((location    :accessor location    :initarg :location)))
 
 (defclass Player (Describable Inventory Located)
-  ())
+  ((out-stream :accessor out-stream :initarg :out-stream :initform *standard-output*)))
 
 (defclass Item (Describable Located)
   ())
@@ -30,13 +53,14 @@
   ((name  :accessor name   :initarg :name)
    (destination :accessor destination :initarg :destination)))
 
-(defgeneric describe-for-user (Describable)
+(defgeneric describe-for-user (stream describable)
   (:documentation "Describe something for a user")
-  (:method ((l Location))
-           (format *standard-output* "~% Location: ~A" (description l))
-           (format *standard-output* "~% With inventory:~{~%  ~a~}." (mapcar #'description (inventory l))))
+  (:method ((stream t) (l Location))
+           (format stream "~% Location: ~A" (description l))
+           (format stream "~% With inventory:~{~%  ~a~}." (mapcar #'description (inventory l))))
 
-  (:method ((i Inventory)) (format *standard-output* "Inventory for ~s: ~{~%  ~a~}." (description i) (mapcar #'description (inventory i)))))
+  (:method ((stream t)(i Inventory))
+           (format stream "Inventory for ~s: ~{~%  ~a~}." (description i) (mapcar #'description (inventory i)))))
 
 (defgeneric move (Player List)
   (:documentation "Move the player somewhere based on some description of a direction")
@@ -46,11 +70,12 @@
                   (navigation (navigation location)))
 
              (dolist (nav  navigation)
-               (when (string-equal (name nav) direction)
+               (when
+                   (find direction (name nav) :test #'string-equal)
                  (move-object p location (destination nav))
                  (return-from move)))
              (if (not (null direction))
-                 (format *standard-output* "Don't know how to go ~{~s~^ ~}" l)))))
+                 (format (out-stream p) "Don't know how to go ~{~s~^ ~}" l)))))
 ;;
 ;; The actual game objects. For testing, not playing (obviously)
 ;;
@@ -60,16 +85,14 @@
 (defvar *initial-item*     (make-instance 'Item     :description "An item"))
 (defvar *current-player*   (make-instance 'Player   :description "The player" :location *initial-location*))
 
-
 (setf (navigation *initial-location*)
-      (list (make-instance 'navigation :name "north" :destination *goal-location*)))
+      (list (make-instance 'navigation :name '("north") :destination *goal-location*)))
 
 (setf (inventory *initial-location*)
       (list *initial-item*))
 
 (setf (navigation *goal-location*)
-      (list (make-instance 'navigation :name "south" :destination  *initial-location*)))
-
+      (list (make-instance 'navigation :name '("south") :destination  *initial-location*)))
 
 ;;;
 ;;; COMMAND LINE PARSER
@@ -79,9 +102,8 @@
   "The main loop"
   (catch 'escape-from-game 
     (loop
-     (format *standard-output* "~% Game>")
+     (format (out-stream *current-player*) "~% Game>")
      (parse-wordlist (split-string-to-words (read-command-from-user))))))
-
 
 
 (defun read-command-from-user ()
@@ -90,8 +112,6 @@
 
 (defun split-string-to-words (line)
   (REGEXP:REGEXP-SPLIT " "  line))
-
-
 
 ;;
 ;;  A command interpreter
@@ -129,33 +149,33 @@
   (add-to-inventory ob destination))
 
 
-(defun find-and-move (query source destination)
+(defun find-and-move (stream query source destination ack)
   (let ((objects  (identify query (inventory source))))
     (cond ((= 1 (length objects))
            (move-object (first objects) source destination)
-           (format *standard-output* "~% Got it"))
+           (format stream  "~% ~a" ack))
           
           ((null objects)
-           (format *standard-output* "~% Couldn't find anything like that"))
+           (format stream "~% Couldn't find anything like that"))
           
           (t
-           (format *standard-output* "~% Hmmm. More than one thing can be described that way. Please be more specific.")))))
+           (format stream  "~% Hmmm. More than one thing can be described that way. Please be more specific.")))))
 
 
 (defgeneric applyCmd (Command Player List)
   (:documentation "Apply a command to a player with some input parameters")
 
   (:method ((c TakeCmd) (p Player) (query List))
-           (find-and-move query (location p) p))
+           (find-and-move (out-stream p) query (location p) p) "Got it")
 
   (:method ((c DropCmd) (p Player) (query List))
-           (find-and-move query p (location p)))
+           (find-and-move (out-stream p) query p (location p) "Dropped"))
   
   (:method ((c InventoryCmd) (p Player) (l List))
-           (describe-for-user p))
+           (describe-for-user (out-stream p) p))
   
   (:method ((c LookCmd) (p Player) (l List))
-           (describe-for-user  (location p)))
+           (describe-for-user  (out-stream p) (location p)))
 
   (:method ((c GoCmd) (p Player) (l List))
            (cond ((null l)
@@ -164,7 +184,7 @@
                   (move p (rest l)))))
 
     (:method ((c HelpCmd) (p Player) (l List))
-             (format *standard-output* "~% Available commands are: ~{~s~^ ~}." (available-commands)))
+             (format (out-stream p) "~% Available commands are: ~{~s~^ ~}." (available-commands)))
     
     (:method ((c QuitCmd) (p Player) (l List))
              (throw 'escape-from-game 'user-quit)))
