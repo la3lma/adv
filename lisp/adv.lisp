@@ -85,14 +85,18 @@
 (defvar *initial-item*     (make-instance 'Item     :description "An item"))
 (defvar *current-player*   (make-instance 'Player   :description "The player" :location *initial-location*))
 
+
+(defparameter *north* '("north" "n"))
+(defparameter *south* '("south" "s"))
+
 (setf (navigation *initial-location*)
-      (list (make-instance 'navigation :name '("north") :destination *goal-location*)))
+      (list (make-instance 'navigation :name *north* :destination *goal-location*)))
 
 (setf (inventory *initial-location*)
       (list *initial-item*))
 
 (setf (navigation *goal-location*)
-      (list (make-instance 'navigation :name '("south") :destination  *initial-location*)))
+      (list (make-instance 'navigation :name *south* :destination  *initial-location*)))
 
 ;;;
 ;;; COMMAND LINE PARSER
@@ -197,7 +201,7 @@
    (make-instance 'TakeCmd      :names '("take" "grab"))
    (make-instance 'DropCmd      :names '("drop" "leave" "stash"))
    (make-instance 'HelpCmd      :names '("?" "help" "what"))
-   (make-instance 'QuitCmd      :names '("quit" "bye"))))
+   (make-instance 'QuitCmd      :names '("quit" "bye" "q"))))
 
  (defun available-commands (&optional (commands *commands*))
    (apply #'append (mapcar #'names *commands*)))
