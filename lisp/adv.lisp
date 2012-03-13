@@ -80,27 +80,59 @@
                  (return-from move)))
              (if (not (null direction))
                  (format (out-stream p) "Don't know how to go ~{~s~^ ~}" l)))))
-;;
-;; The actual game objects. For testing, not playing (obviously)
-;;
 
-(defvar *initial-location* (make-instance 'Location :description "The start"))
-(defvar *goal-location*    (make-instance 'Location :description "The goal"))
-(defvar *initial-item*     (make-instance 'Item     :description "An item"))
-(defvar *current-player*   (make-instance 'Player   :description "The player" :location *initial-location*))
+;;;
+;;;  A BATTLE SYSTEM
+;;;
+
+(defclass Fighter ()
+  ((strength :accessor strength :initarg :out-stream :initform 1.0)
+   (health  :accessor health    :initarg :out-stream :initform 1.0))
+  (:documentation "Base class for fighter.  Used to define the fighting system"))
+
+(defclass Weapon (Item)
+  ((strength     :accessor strength     :initarg :out-stream :initform 1.0)
+   (reliability  :accessor reliability  :initarg :out-stream :initform 1.0))
+  (:documentation "Base class for weapon.  Used to define the fighting system"))
 
 
-(defparameter *north* '("north" "n"))
-(defparameter *south* '("south" "s"))
 
-(setf (navigation *initial-location*)
-      (list (make-instance 'navigation :name *north* :destination *goal-location*)))
+(defgeneric extract-damage-points (weapon)
+  (:method ((w Weapon))
+           3.0 // All weapons inflict 3 hp damage by default ;)
+           // Reliability should be  part of this calculation but isn't
+           )
 
-(setf (inventory *initial-location*)
-      (list *initial-item*))
+  (:method ((w Fighter))
+           2.0 // All fighters inflict 2 hp damage by default
+           )
+  (:documentation "Get some hitpoints from the weapon, possibly change the weapon's state. Return the hitpoints"))
 
-(setf (navigation *goal-location*)
-      (list (make-instance 'navigation :name *south* :destination  *initial-location*)))
+(defun use-weapon (weapon attacked)
+  "Determine how many damage points the attacked  should be inflicted by the weapon,
+   then apply that damage to the attacked"
+  (let ((effect (extract-damage-points weapon)))
+    (inflict-damage effect attacked)))
+
+(defgeneric inflict-damage (damage attacked)
+  (:method ((damage T) (attacked Fighter)) ;; Should be Float instead  of T?
+           (setf (health attacked)
+                 (min 0 (- (health attacked) damage)))))
+    
+(defgeneric attack (attacker attacked weapon)
+  (:method ((attacker Fighter) (attacked Fighter) (weapon T))
+           ;; If we don't have a weapon, let the attacker be the
+           ;; weapon.
+           
+           (use-weapon attacker attacked))
+  
+  (:method ((attacker Fighter) (attacked Fighter) (Weapon weapon))
+           (use-weapon weapon attacked))
+
+  (:documentation "..."))
+
+
+
 
 ;;;
 ;;; COMMAND LINE PARSER
@@ -158,6 +190,7 @@ if there were an empty string between them."
 
 
 (defun add-to-inventory (ob destination)
+  (format *standard-output* "~% Adding ~s to ~s" ob destination)
   (setf (inventory destination)
         (union (list ob) (inventory destination))))
 
@@ -171,9 +204,11 @@ if there were an empty string between them."
 
 (defmethod move-object progn ((ob Located) (source t) (destination Location))
   (setf (location ob) destination) )
-  
-(defmethod move-object  progn ((ob t) (source Inventory) (destination Inventory))
-  (remove-from-inventory ob source)
+
+(defmethod move-object  progn ((ob t) (source Inventory) (destination t))
+  (remove-from-inventory ob source))
+
+(defmethod move-object  progn ((ob t) (source t) (destination Inventory))
   (add-to-inventory ob destination))
 
 
@@ -279,3 +314,27 @@ if there were an empty string between them."
         when (matches query ob)
         collect ob))
 
+;;
+;; The actual game objects. For testing, not playing (obviously)
+;;
+
+(defvar *initial-location* (make-instance 'Location :description "The start"))
+(defvar *goal-location*    (make-instance 'Location :description "The goal"))
+(defvar *initial-item*     (make-instance 'Item     :description "An item"))
+(defvar *current-player*   (make-instance 'Player   :description "The player" :location *initial-location*))
+
+(defvar *sword* (make-instance 'Weapon :description "The sword of generic strikes"))
+
+
+(defparameter *north* '("north" "n"))
+(defparameter *south* '("south" "s"))
+
+;; XXX THis don't work.
+(move-object *sword*        nil *initial-location*)
+(move-object *initial-item* nil *initial-location*)
+
+(setf (navigation *initial-location*)
+      (list (make-instance 'navigation :name *north* :destination *goal-location*)))
+
+(setf (navigation *goal-location*)
+      (list (make-instance 'navigation :name *south* :destination  *initial-location*)))
