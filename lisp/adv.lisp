@@ -23,13 +23,12 @@
 
 
 
+
+
 ;;;
 ;;; THE GAME MODEL
 ;;;
 
-(defclass Describable ()
-  ((description :accessor description :initarg :description :initform ""))
-  (:documentation "Something that is describable for a user"))
 
 (defclass Inventory ()
   ((inventory :accessor inventory :initarg :inventory :initform '()))
@@ -39,13 +38,17 @@
   ((navigation  :accessor navigation   :initarg :navigation :initform '())))
 
 
-(defclass Located ()
+(defclass  Located ()
   ((location    :accessor location    :initarg :location)))
 
-(defclass Player (Describable Inventory Located)
+(defclass Player (Describable Inventory Located )
   ((out-stream :accessor out-stream :initarg :out-stream :initform *standard-output*)
-   (in-stream :accessor in-stream :initarg :in-stream :initform *standard-output*)))
+   (in-stream  :accessor in-stream  :initarg :in-stream  :initform *standard-output*)))
 
+(defclass Describable ()
+  ((description :accessor description :initarg :description :initform ""))
+  (:documentation "Something that is describable for a user"))
+ 
 (defclass Item (Describable Located)
   ())
 
@@ -104,6 +107,10 @@
 ;;;
 
 (defun game-repl (&key (input *standard-input* ) (output *standard-output*) (player *current-player*))
+  (catch 'escape-from-game
+      (inner-game-repl :input input :output output :player player)))
+
+(defun inner-game-repl (&key (input *standard-input* ) (output *standard-output*) (player *current-player*))
   "The main loop"
 
   (setf (out-stream player) output)
@@ -116,8 +123,23 @@
   "Read a simple line from the command line"
   (read-line input))
 
+
+(defun split-by-one-space (string)
+    "Returns a list of substrings of string
+divided by ONE space each.
+Note: Two consecutive spaces will be seen as
+if there were an empty string between them."
+    (loop for i = 0 then (1+ j)
+          as j = (position #\Space string :start i)
+          collect (subseq string i j)
+          while j))
+
 (defun split-string-to-words (line)
-  (REGEXP:REGEXP-SPLIT " "  line))
+  #+clisp
+  (REGEXP:REGEXP-SPLIT " "  line)
+  #+sbcl
+  (split-by-one-space line)
+  )
 
 ;;
 ;;  A command interpreter
@@ -147,7 +169,7 @@
 (defgeneric move-object (ob source destination)
   (:method-combination progn))
 
-(defmethod move-object progn ((ob Located) (source t) (destination t))
+(defmethod move-object progn ((ob Located) (source t) (destination Location))
   (setf (location ob) destination) )
   
 (defmethod move-object  progn ((ob t) (source Inventory) (destination Inventory))
@@ -257,51 +279,3 @@
         when (matches query ob)
         collect ob))
 
-;;
-;;  Setting up a server
-;;
-
-;; The server must allow some kind of login, and then that
-;; login session has to be hooked up to users of various kinds,
-;; then I guess we can just let it rip.
-
-
-
-;; This is what I want
-;; (defun run-as-server () 
-;;   (let ((server (port:open-socket-server 4141)))
-;;     (loop
-     
-;;      ;; Listen for incoming connections
-;;      (let ((socket (socket-accept server)))
-       
-;;        ;; Spawn a process to handle the connection
-;;        (make-process "Connection handler"
-;;                      #'handle-connection
-;;                      socket))
-     
-;;      ;; The main process is now free to accept a new connection
-;;      )))
-
-;; This is what I need to do in clisp
-(defun run-repl-as-server ()
-  (LET ((server (SOCKET:SOCKET-SERVER)))
-       (FORMAT t "~&Waiting for a connection on ~S:~D~%"
-               (SOCKET:SOCKET-SERVER-HOST server) (SOCKET:SOCKET-SERVER-PORT server))
-       (catch 'escape-from-game
-         (UNWIND-PROTECT
-          ;; infinite loop, terminate with Control+C
-          (LOOP (WITH-OPEN-STREAM (socket (SOCKET:SOCKET-ACCEPT server))
-                                  (MULTIPLE-VALUE-BIND (local-host local-port) (SOCKET:SOCKET-STREAM-LOCAL socket)
-                                                       (MULTIPLE-VALUE-BIND (remote-host remote-port) (SOCKET:SOCKET-STREAM-PEER socket)
-                                                                            (FORMAT T "~&Connection: ~S:~D -- ~S:~D~%"
-                                                                                    remote-host remote-port local-host local-port)))
-                                  ;; loop is terminated when the remote host closes the connection or on EXT:EXIT
-                                  (LOOP (WHEN (EQ :eof (SOCKET:SOCKET-STATUS (cons socket :input))) (RETURN))
-                                        ;                                      (PRINT (EVAL (READ socket)) socket)
-                                        (game-repl :input socket :output socket)
-                                        ;; flush everything left in socket
-                                        (LOOP :for c = (READ-CHAR-NO-HANG socket nil nil) :while c)
-                                        (TERPRI socket))))
-          ;; make sure server is closed
-          (SOCKET:SOCKET-SERVER-CLOSE server)))))
