@@ -95,6 +95,8 @@
    (reliability  :accessor reliability  :initarg :out-stream :initform 1.0))
   (:documentation "Base class for weapon.  Used to define the fighting system"))
 
+(defclass Monster (Player Fighter)
+  ())
 
 
 (defgeneric extract-damage-points (weapon)
@@ -130,9 +132,6 @@
            (use-weapon weapon attacked))
 
   (:documentation "..."))
-
-
-
 
 ;;;
 ;;; COMMAND LINE PARSER
@@ -198,6 +197,14 @@ if there were an empty string between them."
   (setf (inventory source)
         (remove ob (inventory source))))
 
+(defgeneric movement-ok (ob source destination)
+  (:method-combination and)
+  (:method and ((ob T) (source T) (destination T))
+           t)
+  (:method and ((ob Monster) (source T) (destination Player))
+           nil)
+  )
+
 
 (defgeneric move-object (ob source destination)
   (:method-combination progn))
@@ -215,9 +222,10 @@ if there were an empty string between them."
 (defun find-and-move (stream query source destination ack)
   (let ((objects  (identify query (inventory source))))
     (cond ((= 1 (length objects))
-           (move-object (first objects) source destination)
-           (format stream  "~% ~a" ack))
-          
+           (if (movement-ok (first objects) source destination)
+               (progn (move-object (first objects) source destination)
+                      (format stream  "~% ~a" ack))
+             (format stream "~% no can do")))
           ((null objects)
            (format stream "~% Couldn't find anything like that"))
           
@@ -321,7 +329,11 @@ if there were an empty string between them."
 (defvar *initial-location* (make-instance 'Location :description "The start"))
 (defvar *goal-location*    (make-instance 'Location :description "The goal"))
 (defvar *initial-item*     (make-instance 'Item     :description "An item"))
-(defvar *current-player*   (make-instance 'Player   :description "The player" :location *initial-location*))
+(defvar *current-player*   (make-instance 'Player
+                                          :description "The player"
+                                          :location *initial-location*))
+(defvar *first-monster*    (make-instance 'Monster
+                                          :description "First monster"))
 
 (defvar *sword* (make-instance 'Weapon :description "The sword of generic strikes"))
 
@@ -330,8 +342,9 @@ if there were an empty string between them."
 (defparameter *south* '("south" "s"))
 
 ;; XXX THis don't work.
-(move-object *sword*        nil *initial-location*)
-(move-object *initial-item* nil *initial-location*)
+(move-object *sword*        nil  *initial-location*)
+(move-object *initial-item* nil  *initial-location*)
+(move-object *first-monster* nil *initial-location*)
 
 (setf (navigation *initial-location*)
       (list (make-instance 'navigation :name *north* :destination *goal-location*)))
