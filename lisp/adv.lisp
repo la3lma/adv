@@ -234,6 +234,24 @@ if there were an empty string between them."
            (format stream  "~% Hmmm. More than one thing can be described that way. Please be more specific.")))))
 
 
+
+;;; This can be refactored fist by using a proper loop
+;;; and then using a much better parser
+(defun split-on-word (input splitlist)
+  (let ((pre  '())
+        (post '())
+        (post-marker nil))
+
+    (dolist (i input)
+      (cond  (post-marker
+              (setf post (append post (list i))))
+             ((find i splitlist :test #'string-equal)
+              (setf post-marker t))
+             (t 
+              (setf pre (append pre (list i))))))
+    (values pre post)))
+
+
 (defgeneric applyCmd (Command Player List)
   (:documentation "Apply a command to a player with some input parameters")
 
@@ -244,8 +262,15 @@ if there were an empty string between them."
            (find-and-move (out-stream p) query p (location p) "Dropped"))
 
   (:method ((c FightCmd) (p Player) (query List))
-           (format *standard-output* "~% Don't know how to fight")
-           )
+           
+           ;; Is the query on the format <target> (<with> <weapon>)?
+           (multiple-value-bind (target-desc weapon-desc)
+               (split-on-word (cdr query) '("with" "using"))
+             (let ((target (identify target-desc (inventory (location p))))
+                   (weapon (identify weapon-desc (inventory p))))
+               (format *standard-output* "~% Fight lexical ~s using ~s" target-desc weapon-desc)
+               (format *standard-output* "~% Fight parsed  ~s using ~s" target  weapon)
+               )))
   
   (:method ((c InventoryCmd) (p Player) (l List))
            (describe-for-user (out-stream p) p))
@@ -271,7 +296,7 @@ if there were an empty string between them."
    (make-instance 'InventoryCmd :names '("inventory" "inv" "list"))
    (make-instance 'LookCmd      :names '("look" "peek" "see" "glance"))
    (make-instance 'GoCmd        :names '("go" "move" "run" "jump" "crawl"))
-   (make-instance 'FightCmd     :names '("fight" "kill" "strike" "slash" "slab" "attack" "stab"))
+   (make-instance 'FightCmd     :names '("fight" "kill" "strike" "slash" "slab" "attack" "stab" "maim" "hit"))
    (make-instance 'TakeCmd      :names '("take" "grab"))
    (make-instance 'DropCmd      :names '("drop" "leave" "stash"))
    (make-instance 'HelpCmd      :names '("?" "help" "what"))
