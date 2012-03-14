@@ -182,6 +182,7 @@ if there were an empty string between them."
 (defclass InventoryCmd (Command) ())
 (defclass LookCmd      (Command) ())
 (defclass GoCmd        (Command) ())
+(defclass FightCmd     (Command) ())
 (defclass HelpCmd      (Command) ())
 (defclass QuitCmd      (Command) ())
 (defclass TakeCmd      (Command) ())
@@ -241,6 +242,10 @@ if there were an empty string between them."
 
   (:method ((c DropCmd) (p Player) (query List))
            (find-and-move (out-stream p) query p (location p) "Dropped"))
+
+  (:method ((c FightCmd) (p Player) (query List))
+           (format *standard-output* "~% Don't know how to fight")
+           )
   
   (:method ((c InventoryCmd) (p Player) (l List))
            (describe-for-user (out-stream p) p))
@@ -266,6 +271,7 @@ if there were an empty string between them."
    (make-instance 'InventoryCmd :names '("inventory" "inv" "list"))
    (make-instance 'LookCmd      :names '("look" "peek" "see" "glance"))
    (make-instance 'GoCmd        :names '("go" "move" "run" "jump" "crawl"))
+   (make-instance 'FightCmd     :names '("fight" "kill" "strike" "slash" "slab" "attack" "stab"))
    (make-instance 'TakeCmd      :names '("take" "grab"))
    (make-instance 'DropCmd      :names '("drop" "leave" "stash"))
    (make-instance 'HelpCmd      :names '("?" "help" "what"))
