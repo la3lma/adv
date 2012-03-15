@@ -117,14 +117,23 @@
 ;;     Also, sound/graphics should be focused at this point.
 
 
+
+
+(defgeneric is-dead-p (actor)
+  (:method-combination and)
+  (:method  and  ((actor T))
+            t)
+  (:method and ((fighter Fighter))
+           (<= (health fighter) 0.0000001)))
+
 (defgeneric health-reaction (actor newHealth)
-  (:method ((actor Fighter)(newHealth Number))
-           (setf (health actor) newHealth)
+  (:method ((fighter Fighter)(newHealth Number))
+           (setf (health fighter) newHealth)
            ;; XXX Set state of player as well.  Dead players shouldn't
            ;;     be allowed to act, but may be allowed to react, and may
            ;;     perhaps be reanimated using a healing spell (not yet defined)
-           (if (<= (health actor) 0.0000001)
-               (format *standard-output* "~% ~a dies" (description actor)))))
+           (when (is-dead-p fighter)
+             (format *standard-output* "~% ~a dies" (description fighter)))))
 
 (defgeneric inflict-damage  (damage attacked)
   (:method ((damage Number) (attacked Fighter))
@@ -139,11 +148,11 @@
   (:method ((attacker Fighter) (attacked Fighter) (weapon T))
            ;; If we don't have a weapon, let the attacker be the
            ;; weapon.
-           (format *standard-output* "~% ~a attacks ~a with his own hands" (description attacker) (description attacked))
+           (format *standard-output* "~% ~@(~a~) attacks ~a with his own hands" (description attacker) (description attacked))
            (use-weapon attacker attacked))
   
   (:method ((attacker Fighter) (attacked Fighter) (weapon Weapon))
-           (format *standard-output* "~% ~a attacks ~a with ~a" (description attacker) (description attacked) (description weapon))
+           (format *standard-output* "~% ~@(~a~) attacks ~a with ~a" (description attacker) (description attacked) (description weapon))
            (use-weapon weapon attacked))
 
   (:documentation "..."))
@@ -323,7 +332,7 @@ if there were an empty string between them."
    (make-instance 'LookCmd      :names '("look" "peek" "see" "glance"))
    (make-instance 'GoCmd        :names '("go" "move" "run" "jump" "crawl"))
    (make-instance 'FightCmd     :names '("fight" "kill" "strike" "slash" "slab" "attack" "stab" "maim" "hit"))
-   (make-instance 'TakeCmd      :names '("take" "grab"))
+   (make-instance 'TakeCmd      :names '("take" "grab" "pick"))
    (make-instance 'DropCmd      :names '("drop" "leave" "stash"))
    (make-instance 'HelpCmd      :names '("?" "help" "what"))
    (make-instance 'QuitCmd      :names '("quit" "bye" "q"))))
@@ -391,7 +400,7 @@ if there were an empty string between them."
                                           :location *initial-location*))
 (defvar *first-monster*    (make-instance 'Monster
                                           :health       30
-                                          :description "First monster"))
+                                          :description "Green little qutie monster"))
 
 (defvar *sword* (make-instance 'Weapon :description "The sword of generic strikes"))
 
