@@ -82,8 +82,8 @@
 ;;;
 
 (defclass Fighter ()
-  ((strength :accessor strength :initarg :out-stream :initform 1.0)
-   (health  :accessor health    :initarg :out-stream :initform 1.0))
+  ((strength :accessor strength :initarg :strength :initform 1.0)
+   (health   :accessor health   :initarg :health   :initform 1.0))
   (:documentation "Base class for fighter.  Used to define the fighting system"))
 
 (defclass Weapon (Item)
@@ -111,25 +111,39 @@
   (let ((effect (extract-damage-points weapon)))
     (inflict-damage effect attacked)))
 
+
+;; XXX This is the core of the battle system, this is where
+;;     the attack/counterattack system should be injected.
+;;     Also, sound/graphics should be focused at this point.
+
+
+(defgeneric health-reaction (actor newHealth)
+  (:method ((actor Fighter)(newHealth Number))
+           (setf (health actor) newHealth)
+           ;; XXX Set state of player as well.  Dead players shouldn't
+           ;;     be allowed to act, but may be allowed to react, and may
+           ;;     perhaps be reanimated using a healing spell (not yet defined)
+           (if (<= (health actor) 0.0000001)
+               (format *standard-output* "~% ~a dies" (description actor)))))
+
 (defgeneric inflict-damage  (damage attacked)
   (:method ((damage Number) (attacked Fighter))
-           (format *standard-output* "~% Inflicting damage ~s to fighter ~s with initial health ~s"
-                   damage attacked (health attacked))
-           (setf (health attacked)
-                 (max 0 (- (health attacked) damage)))
-           (format *standard-output* "~%     Health after attack ~s"
-                   (health attacked))
-           ))
+           (format *standard-output* "~%   Inflicting damage ~f hp to fighter ~a with initial health ~f"
+                   damage (description attacked) (health attacked))
+
+           (health-reaction
+            attacked 
+            (max 0 (- (health attacked) damage)))))
     
 (defgeneric attack (attacker attacked weapon)
   (:method ((attacker Fighter) (attacked Fighter) (weapon T))
            ;; If we don't have a weapon, let the attacker be the
            ;; weapon.
-           (format *standard-output* "~% ~s attacks ~s with his own hands" attacker attacked)
+           (format *standard-output* "~% ~a attacks ~a with his own hands" (description attacker) (description attacked))
            (use-weapon attacker attacked))
   
   (:method ((attacker Fighter) (attacked Fighter) (weapon Weapon))
-           (format *standard-output* "~% ~s attacks ~s with ~s" attacker attacked weapon)
+           (format *standard-output* "~% ~a attacks ~a with ~a" (description attacker) (description attacked) (description weapon))
            (use-weapon weapon attacked))
 
   (:documentation "..."))
@@ -249,6 +263,16 @@ if there were an empty string between them."
            (format stream  "~% Hmmm. More than one thing can be described that way. Please be more specific.")))))
 
 
+(defun pick-most-appropriate-weapon (attacker attacked)
+  "Pick the most appropriate weapon for use when the attacker attacks the attacked"
+  nil ;; bare hands is a good choice ;)
+  )
+
+
+(defun counterattack (defender attacker)
+  "The defender counterattacks against the attacker, if possible"
+  (attack defender attacker (pick-most-appropriate-weapon defender attacker)))
+
 (defgeneric applyCmd (Command Player List)
   (:documentation "Apply a command to a player with some input parameters")
 
@@ -266,13 +290,13 @@ if there were an empty string between them."
              (let ((target (identify target-desc (inventory (location p))))
                    (weapon (identify weapon-desc (inventory p))))
                
-               (format *standard-output* "~% Fight lexical ~s using ~s" target-desc weapon-desc)
-               (format *standard-output* "~% Fight parsed  ~s using ~s" target  (or (null weapon) (car weapon))
-                       (attack p
-                               (if (null target) null (car target))
-                               (if (null weapon) p (car weapon))
-                              )) ;; XXX Bogus
-               )))
+;;               (format *standard-output* "~% Fight lexical ~s using ~s" target-desc weapon-desc)
+;;               (format *standard-output* "~% Fight parsed  ~s using ~s" target  (or (null weapon) (car weapon)))
+               (let ((tgt                        (if (null target) null (car target)))
+                     (wpn (if (null weapon) p (car weapon))))
+                 (attack p  tgt  wpn)
+                 (counterattack tgt p)))))
+
   
   (:method ((c InventoryCmd) (p Player) (l List))
            (describe-for-user (out-stream p) p))
@@ -366,6 +390,7 @@ if there were an empty string between them."
                                           :description "The player"
                                           :location *initial-location*))
 (defvar *first-monster*    (make-instance 'Monster
+                                          :health       30
                                           :description "First monster"))
 
 (defvar *sword* (make-instance 'Weapon :description "The sword of generic strikes"))
