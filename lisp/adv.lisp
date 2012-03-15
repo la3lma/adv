@@ -16,13 +16,9 @@
 ;;  limitations under the License.
 ;;
 
-
 ;; This is a small unpretentious implementation of a seventies
 ;; style text adventure.  It's written just for fun and to
 ;; get to play a bit with my old friend Common Lisp again.
-
-
-
 
 
 ;;;
@@ -41,7 +37,7 @@
 (defclass  Located ()
   ((location    :accessor location    :initarg :location)))
 
-(defclass Player (Describable Inventory Located )
+(defclass Player (Describable Inventory Located Fighter)
   ((out-stream :accessor out-stream :initarg :out-stream :initform *standard-output*)
    (in-stream  :accessor in-stream  :initarg :in-stream  :initform *standard-output*)))
 
@@ -95,18 +91,17 @@
    (reliability  :accessor reliability  :initarg :out-stream :initform 1.0))
   (:documentation "Base class for weapon.  Used to define the fighting system"))
 
-(defclass Monster (Player Fighter)
+(defclass Monster (Player)
   ())
-
 
 (defgeneric extract-damage-points (weapon)
   (:method ((w Weapon))
-           3.0 // All weapons inflict 3 hp damage by default ;)
-           // Reliability should be  part of this calculation but isn't
+           3.0 ;; All weapons inflict 3 hp damage by default ;)
+               ;; Reliability should be  part of this calculation but isn't
            )
 
   (:method ((w Fighter))
-           2.0 // All fighters inflict 2 hp damage by default
+           2.0 ;; All fighters inflict 2 hp damage by default
            )
   (:documentation "Get some hitpoints from the weapon, possibly change the weapon's state. Return the hitpoints"))
 
@@ -116,19 +111,25 @@
   (let ((effect (extract-damage-points weapon)))
     (inflict-damage effect attacked)))
 
-(defgeneric inflict-damage (damage attacked)
-  (:method ((damage T) (attacked Fighter)) ;; Should be Float instead  of T?
+(defgeneric inflict-damage  (damage attacked)
+  (:method ((damage Number) (attacked Fighter))
+           (format *standard-output* "~% Inflicting damage ~s to fighter ~s with initial health ~s"
+                   damage attacked (health attacked))
            (setf (health attacked)
-                 (min 0 (- (health attacked) damage)))))
+                 (max 0 (- (health attacked) damage)))
+           (format *standard-output* "~%     Health after attack ~s"
+                   (health attacked))
+           ))
     
 (defgeneric attack (attacker attacked weapon)
   (:method ((attacker Fighter) (attacked Fighter) (weapon T))
            ;; If we don't have a weapon, let the attacker be the
            ;; weapon.
-           
+           (format *standard-output* "~% ~s attacks ~s with his own hands" attacker attacked)
            (use-weapon attacker attacked))
   
-  (:method ((attacker Fighter) (attacked Fighter) (Weapon weapon))
+  (:method ((attacker Fighter) (attacked Fighter) (weapon Weapon))
+           (format *standard-output* "~% ~s attacks ~s with ~s" attacker attacked weapon)
            (use-weapon weapon attacked))
 
   (:documentation "..."))
@@ -171,6 +172,20 @@ if there were an empty string between them."
   #+sbcl
   (split-by-one-space line)
   )
+
+(defun split-on-word (input splitlist)
+  (let ((pre  '())
+        (post '())
+        (post-marker nil))
+
+    (dolist (i input)
+      (cond  (post-marker
+              (setf post (append post (list i))))
+             ((find i splitlist :test #'string-equal)
+              (setf post-marker t))
+             (t 
+              (setf pre (append pre (list i))))))
+    (values pre post)))
 
 ;;
 ;;  A command interpreter
@@ -235,21 +250,8 @@ if there were an empty string between them."
 
 
 
-;;; This can be refactored fist by using a proper loop
-;;; and then using a much better parser
-(defun split-on-word (input splitlist)
-  (let ((pre  '())
-        (post '())
-        (post-marker nil))
 
-    (dolist (i input)
-      (cond  (post-marker
-              (setf post (append post (list i))))
-             ((find i splitlist :test #'string-equal)
-              (setf post-marker t))
-             (t 
-              (setf pre (append pre (list i))))))
-    (values pre post)))
+
 
 
 (defgeneric applyCmd (Command Player List)
@@ -268,8 +270,13 @@ if there were an empty string between them."
                (split-on-word (cdr query) '("with" "using"))
              (let ((target (identify target-desc (inventory (location p))))
                    (weapon (identify weapon-desc (inventory p))))
+               
                (format *standard-output* "~% Fight lexical ~s using ~s" target-desc weapon-desc)
-               (format *standard-output* "~% Fight parsed  ~s using ~s" target  weapon)
+               (format *standard-output* "~% Fight parsed  ~s using ~s" target  (or (null weapon) (car weapon))
+                       (attack p
+                               (if (null target) null (car target))
+                               (if (null weapon) p (car weapon))
+                              )) ;; XXX Bogus
                )))
   
   (:method ((c InventoryCmd) (p Player) (l List))
