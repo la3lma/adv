@@ -249,11 +249,6 @@ if there were an empty string between them."
            (format stream  "~% Hmmm. More than one thing can be described that way. Please be more specific.")))))
 
 
-
-
-
-
-
 (defgeneric applyCmd (Command Player List)
   (:documentation "Apply a command to a player with some input parameters")
 
