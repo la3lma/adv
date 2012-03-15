@@ -118,6 +118,8 @@
 
 
 
+(defun is-alive-p (actor)
+  (not (is-dead-p)))
 
 (defgeneric is-dead-p (actor)
   (:method-combination and)
@@ -346,9 +348,12 @@ if there were an empty string between them."
            commands :key #'names))
 
 (defun parse-wordlist (wl)
-  (let ((cmd (find-command (first wl))))
-    (if (not (null cmd))
-        (applyCmd cmd *current-player* wl))))
+  (cond ((is-dead-p *current-player*)
+         ;; XXX Too draconian.  The help command should be available
+         (format *standard-output* "Well, you're dead so obviously you can't do much"))
+        (t (let ((cmd (find-command (first wl))))
+             (if (not (null cmd))
+                 (applyCmd cmd *current-player* wl))))))
 
 ;;
 ;;  The search engine  ;)
