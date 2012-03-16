@@ -451,11 +451,6 @@ if there were an empty string between them."
         (union (navigation origin)
                (list (make-instance 'navigation :names names :destination  destination)))))
 
-(set-navigation *initial-location* *goal-location* *north*)
-(set-navigation *goal-location* *initial-location* *south*)
+(set-navigation *initial-location* *goal-location*    *north*)
+(set-navigation *goal-location*    *initial-location* *south*)
 
-;;(setf (navigation *initial-location*)
-;;      (list (make-instance 'navigation :names *north* :destination *goal-location*)))
-
-;;(setf (navigation *goal-location*)
-;;      (list (make-instance 'navigation :names *south* :destination  *initial-location*)))
