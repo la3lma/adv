@@ -119,7 +119,7 @@
 
 
 (defun is-alive-p (actor)
-  (not (is-dead-p)))
+  (not (is-dead-p actor)))
 
 (defgeneric is-dead-p (actor)
   (:method-combination and)
@@ -219,6 +219,9 @@ if there were an empty string between them."
 (defclass Command ()
   ((names :accessor names :initarg :names)))
 
+
+           
+
 (defclass InventoryCmd (Command) ())
 (defclass LookCmd      (Command) ())
 (defclass GoCmd        (Command) ())
@@ -227,6 +230,19 @@ if there were an empty string between them."
 (defclass QuitCmd      (Command) ())
 (defclass TakeCmd      (Command) ())
 (defclass DropCmd      (Command) ())
+
+
+(defgeneric command-available-for-player-p (command player)
+  (:documentation "Return t if the command is available to the user, nil otherwise")
+
+  ;; By default commands are only available for living players.
+  (:method ((c Command) (p Player))
+           (is-alive-p p))
+  
+  ;; However, a couple of commands will always be available
+  (:method ((c QuitCmd) (p Player))  t)
+  (:method ((c HelpCmd) (p Player))  t))
+
 
 
 (defun add-to-inventory (ob destination)
@@ -321,12 +337,12 @@ if there were an empty string between them."
                  (t 
                   (move p (rest l)))))
 
-    (:method ((c HelpCmd) (p Player) (l List))
-             (format (out-stream p) "~% Available commands are: ~{~s~^ ~}." (available-commands)))
-    
-    (:method ((c QuitCmd) (p Player) (l List))
-             (format (out-stream p) "~% Ttfn~2%")
-             (throw 'escape-from-game 'user-quit)))
+  (:method ((c HelpCmd) (p Player) (l List))
+           (format (out-stream p) "~% Available commands are: ~{~s~^ ~}." (available-commands (commands-available-for-player p))))
+  
+  (:method ((c QuitCmd) (p Player) (l List))
+           (format (out-stream p) "~% Ttfn~2%")
+           (throw 'escape-from-game 'user-quit)))
 
 (defparameter *commands*
   (list
@@ -339,7 +355,12 @@ if there were an empty string between them."
    (make-instance 'HelpCmd      :names '("?" "help" "what"))
    (make-instance 'QuitCmd      :names '("quit" "bye" "q"))))
 
- (defun available-commands (&optional (commands *commands*))
+(defun commands-available-for-player (player &optional (commands *commands*))
+  (loop for command in commands
+        when (command-available-for-player-p command player)
+        collect command))
+
+(defun available-commands (&optional (commands *commands*))
    (apply #'append (mapcar #'names *commands*)))
 
 (defun find-command (name &optional (commands *commands*))
@@ -348,12 +369,9 @@ if there were an empty string between them."
            commands :key #'names))
 
 (defun parse-wordlist (wl)
-  (cond ((is-dead-p *current-player*)
-         ;; XXX Too draconian.  The help command should be available
-         (format *standard-output* "Well, you're dead so obviously you can't do much"))
-        (t (let ((cmd (find-command (first wl))))
-             (if (not (null cmd))
-                 (applyCmd cmd *current-player* wl))))))
+  (let ((cmd (find-command (first wl) (commands-available-for-player *current-player*))))
+    (if (not (null cmd))
+        (applyCmd cmd *current-player* wl))))
 
 ;;
 ;;  The search engine  ;)
