@@ -413,28 +413,12 @@ if there were an empty string between them."
         collect ob))
 
 ;;
-;; The actual game objects. For testing, not playing (obviously)
+;; World building
 ;;
-
-(defparameter *initial-location* (make-instance 'Location :description "The start"))
-(defparameter *goal-location*    (make-instance 'Location :description "The goal"))
-(defparameter *initial-item*     (make-instance 'Item     :description "An item"))
-(defparameter *current-player*   (make-instance 'Player
-                                          :description "The player"
-                                          :location *initial-location*))
-(defparameter *first-monster*    (make-instance 'Monster
-                                          :health       30
-                                          :description "Green little qutie monster"))
-
-(defparameter *sword* (make-instance 'Weapon :description "The sword of generic strikes"))
 
 (defparameter *north* '("north" "n"))
 (defparameter *south* '("south" "s"))
 
-
-(move-object *sword*        nil  *initial-location*)
-(move-object *initial-item* nil  *initial-location*)
-(move-object *first-monster* nil *initial-location*)
 
 
 (defun find-matching-navigations (directionnames location)
@@ -450,6 +434,28 @@ if there were an empty string between them."
   (setf (navigation origin)
         (union (navigation origin)
                (list (make-instance 'navigation :names names :destination  destination)))))
+
+
+;;
+;; The actual game objects. For testing, not playing (obviously)
+;;
+
+
+(defparameter *initial-location* (make-instance 'Location :description "The start"))
+(defparameter *goal-location*    (make-instance 'Location :description "The goal"))
+(defparameter *initial-item*     (make-instance 'Item     :description "An item"))
+(defparameter *current-player*   (make-instance 'Player
+                                          :description "The player"
+                                          :location *initial-location*))
+(defparameter *first-monster*    (make-instance 'Monster
+                                          :health       30
+                                          :description "Green little qutie monster"))
+
+(defparameter *sword* (make-instance 'Weapon :description "The sword of generic strikes"))
+
+(move-object *sword*        nil  *initial-location*)
+(move-object *initial-item* nil  *initial-location*)
+(move-object *first-monster* nil *initial-location*)
 
 (set-navigation *initial-location* *goal-location*    *north*)
 (set-navigation *goal-location*    *initial-location* *south*)
