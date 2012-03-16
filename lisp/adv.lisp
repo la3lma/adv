@@ -50,7 +50,7 @@
 
 
 (defclass Navigation ()
-  ((name  :accessor name   :initarg :name)
+  ((names  :accessor names   :initarg :names)
    (destination :accessor destination :initarg :destination)))
 
 (defgeneric describe-for-user (stream describable)
@@ -58,7 +58,7 @@
   (:method ((stream t) (l Location))
            (format stream "~% Location: ~A" (description l))
            (format stream "~% With inventory:~{~%  ~a~}." (mapcar #'description (inventory l)))
-           (let ((directions (mapcar #'car  (mapcar #'name  (navigation l)))))
+           (let ((directions (mapcar #'car  (mapcar #'names  (navigation l)))))
              (format stream "~%      exit~p:~{ ~a~^, ~}." (length directions) directions)))
 
   (:method ((stream t)(i Inventory))
@@ -73,7 +73,7 @@
 
              (dolist (nav  navigation)
                (when
-                   (find direction (name nav) :test #'string-equal)
+                   (find direction (names nav) :test #'string-equal)
                  (move-object p location (destination nav))
                  (return-from move)))
              (if (not (null direction))
@@ -248,9 +248,7 @@ if there were an empty string between them."
   (:method ((c HelpCmd) (p Player))  t))
 
 
-
 (defun add-to-inventory (ob destination)
-  (format *standard-output* "~% Adding ~s to ~s" ob destination)
   (setf (inventory destination)
         (union (list ob) (inventory destination))))
 
@@ -263,8 +261,7 @@ if there were an empty string between them."
   (:method and ((ob T) (source T) (destination T))
            t)
   (:method and ((ob Monster) (source T) (destination Player))
-           nil)
-  )
+           nil))
 
 
 (defgeneric move-object (ob source destination)
@@ -431,7 +428,6 @@ if there were an empty string between them."
 
 (defparameter *sword* (make-instance 'Weapon :description "The sword of generic strikes"))
 
-
 (defparameter *north* '("north" "n"))
 (defparameter *south* '("south" "s"))
 
@@ -440,8 +436,26 @@ if there were an empty string between them."
 (move-object *initial-item* nil  *initial-location*)
 (move-object *first-monster* nil *initial-location*)
 
-(setf (navigation *initial-location*)
-      (list (make-instance 'navigation :name *north* :destination *goal-location*)))
 
-(setf (navigation *goal-location*)
-      (list (make-instance 'navigation :name *south* :destination  *initial-location*)))
+(defun find-matching-navigations (directionnames location)
+  (loop for nav in (navigation location)
+        when (intersection directionnames (name location) :test #'string-equal)
+        collect nav))
+
+
+(defun set-navigation (origin destination names)
+  "Will replace the names with a new navigation instance"
+  (setf (navigation origin)
+        (set-difference (navigation origin) (find-matching-navigations names origin)))
+  (setf (navigation origin)
+        (union (navigation origin)
+               (list (make-instance 'navigation :names names :destination  destination)))))
+
+(set-navigation *initial-location* *goal-location* *north*)
+(set-navigation *goal-location* *initial-location* *south*)
+
+;;(setf (navigation *initial-location*)
+;;      (list (make-instance 'navigation :names *north* :destination *goal-location*)))
+
+;;(setf (navigation *goal-location*)
+;;      (list (make-instance 'navigation :names *south* :destination  *initial-location*)))
