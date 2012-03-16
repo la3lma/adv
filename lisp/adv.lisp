@@ -319,7 +319,7 @@ if there were an empty string between them."
                
 ;;               (format *standard-output* "~% Fight lexical ~s using ~s" target-desc weapon-desc)
 ;;               (format *standard-output* "~% Fight parsed  ~s using ~s" target  (or (null weapon) (car weapon)))
-               (let ((tgt                        (if (null target) null (car target)))
+               (let ((tgt (if (null target) null (car target)))
                      (wpn (if (null weapon) p (car weapon))))
                  (attack p  tgt  wpn)
                  (counterattack tgt p)))))
@@ -338,7 +338,10 @@ if there were an empty string between them."
                   (move p (rest l)))))
 
   (:method ((c HelpCmd) (p Player) (l List))
-           (format (out-stream p) "~% Available commands are: ~{~s~^ ~}." (available-commands (commands-available-for-player p))))
+           (let ((available-commands (commands-available-for-player p)))
+             (format *standard-output* "~% filtered cmds ~s" available-commands)
+             (format (out-stream p) "~% Available commands are: ~{~s~^ ~}."
+                     (map-commands-to-command-names available-commands))))
   
   (:method ((c QuitCmd) (p Player) (l List))
            (format (out-stream p) "~% Ttfn~2%")
@@ -360,10 +363,11 @@ if there were an empty string between them."
         when (command-available-for-player-p command player)
         collect command))
 
-(defun available-commands (&optional (commands *commands*))
-   (apply #'append (mapcar #'names *commands*)))
 
-(defun find-command (name &optional (commands *commands*))
+(defun map-commands-to-command-names (commands)
+   (apply #'append (mapcar #'names commands)))
+
+(defun find-command (name commands)
   "Find a command matching a name"
   (find-if #'(lambda (names) (find  name names :test #'string-equal))
            commands :key #'names))
