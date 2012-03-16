@@ -57,7 +57,9 @@
   (:documentation "Describe something for a user")
   (:method ((stream t) (l Location))
            (format stream "~% Location: ~A" (description l))
-           (format stream "~% With inventory:~{~%  ~a~}." (mapcar #'description (inventory l))))
+           (format stream "~% With inventory:~{~%  ~a~}." (mapcar #'description (inventory l)))
+           (let ((directions (mapcar #'car  (mapcar #'name  (navigation l)))))
+             (format stream "~%      exit~p:~{ ~a~^, ~}." (length directions) directions)))
 
   (:method ((stream t)(i Inventory))
            (format stream "Inventory for ~s: ~{~%  ~a~}." (description i) (mapcar #'description (inventory i)))))
@@ -172,9 +174,11 @@
 
   (setf (out-stream player) output)
   (setf (in-stream  player) input)
-    (loop
-     (format (out-stream player) "~% Adv>")
-     (parse-wordlist (split-string-to-words (read-command-from-user :input input)))))
+  (loop
+   (if (is-dead-p player)
+       (format (out-stream player) "~% You are dead"))
+   (format (out-stream player) "~% Adv>")
+   (parse-wordlist (split-string-to-words (read-command-from-user :input input)))))
 
 (defun read-command-from-user (&key (input *standard-input*))
   "Read a simple line from the command line"
@@ -316,9 +320,6 @@ if there were an empty string between them."
                (split-on-word (cdr query) '("with" "using"))
              (let ((target (identify target-desc (inventory (location p))))
                    (weapon (identify weapon-desc (inventory p))))
-               
-;;               (format *standard-output* "~% Fight lexical ~s using ~s" target-desc weapon-desc)
-;;               (format *standard-output* "~% Fight parsed  ~s using ~s" target  (or (null weapon) (car weapon)))
                (let ((tgt (if (null target) null (car target)))
                      (wpn (if (null weapon) p (car weapon))))
                  (attack p  tgt  wpn)
@@ -339,8 +340,7 @@ if there were an empty string between them."
 
   (:method ((c HelpCmd) (p Player) (l List))
            (let ((available-commands (commands-available-for-player p)))
-             (format *standard-output* "~% filtered cmds ~s" available-commands)
-             (format (out-stream p) "~% Available commands are: ~{~s~^ ~}."
+             (format (out-stream p) "~% Available commands are: ~{~s~^, ~}."
                      (map-commands-to-command-names available-commands))))
   
   (:method ((c QuitCmd) (p Player) (l List))
@@ -419,23 +419,23 @@ if there were an empty string between them."
 ;; The actual game objects. For testing, not playing (obviously)
 ;;
 
-(defvar *initial-location* (make-instance 'Location :description "The start"))
-(defvar *goal-location*    (make-instance 'Location :description "The goal"))
-(defvar *initial-item*     (make-instance 'Item     :description "An item"))
-(defvar *current-player*   (make-instance 'Player
+(defparameter *initial-location* (make-instance 'Location :description "The start"))
+(defparameter *goal-location*    (make-instance 'Location :description "The goal"))
+(defparameter *initial-item*     (make-instance 'Item     :description "An item"))
+(defparameter *current-player*   (make-instance 'Player
                                           :description "The player"
                                           :location *initial-location*))
-(defvar *first-monster*    (make-instance 'Monster
+(defparameter *first-monster*    (make-instance 'Monster
                                           :health       30
                                           :description "Green little qutie monster"))
 
-(defvar *sword* (make-instance 'Weapon :description "The sword of generic strikes"))
+(defparameter *sword* (make-instance 'Weapon :description "The sword of generic strikes"))
 
 
 (defparameter *north* '("north" "n"))
 (defparameter *south* '("south" "s"))
 
-;; XXX THis don't work.
+
 (move-object *sword*        nil  *initial-location*)
 (move-object *initial-item* nil  *initial-location*)
 (move-object *first-monster* nil *initial-location*)
