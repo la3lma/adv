@@ -420,7 +420,6 @@ if there were an empty string between them."
 (defparameter *south* '("south" "s"))
 
 
-
 (defun find-matching-navigations (directionnames location)
   (loop for nav in (navigation location)
         when (intersection directionnames (name location) :test #'string-equal)
@@ -435,10 +434,10 @@ if there were an empty string between them."
         (union (navigation origin)
                (list (make-instance 'navigation :names names :destination  destination)))))
 
-
 ;;
 ;; The actual game objects. For testing, not playing (obviously)
 ;;
+
 
 
 (defparameter *initial-location* (make-instance 'Location :description "The start"))
