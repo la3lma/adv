@@ -1,5 +1,10 @@
+
+o Look at some state of the art Common Lisp projects (perhaps https://github.com/fons/cl-mongo/blob/master/cl-mongo.asd)
+   And see how they are structured.   Learn an copy best practices. Use quicklisp.
+o Consider some syntactic sugar to describe the worlds we're playing in, perhaps making a domain specific language (within lisp) for it.
 o Look into terminal graphics.
 o Look in to letting a  javascript client talking directly to the lisp server.
 o Look into networking, e.g. http://xach.com/lisp/quicknet.lisp, http://cl-cookbook.sourceforge.net/sockets.html
 o Make it possible to run multiple clients each being served by a communications thread (http://www.clisp.org/impnotes/mt.html) which
    in turn talks to a single-threaded game mechanics thread.   Or something.
+
