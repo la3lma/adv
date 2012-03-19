@@ -2,9 +2,43 @@
 o Look at some state of the art Common Lisp projects (perhaps https://github.com/fons/cl-mongo/blob/master/cl-mongo.asd)
    And see how they are structured.   Learn an copy best practices. Use quicklisp.
 o Consider some syntactic sugar to describe the worlds we're playing in, perhaps making a domain specific language (within lisp) for it.
+o Look at making the emacs/slime environment play nice.
+o Look into the whole MCL thing.  Perhaps it is useful? So far I can't even make it compile :-(
 o Look into terminal graphics.
 o Look in to letting a  javascript client talking directly to the lisp server.
 o Look into networking, e.g. http://xach.com/lisp/quicknet.lisp, http://cl-cookbook.sourceforge.net/sockets.html
 o Make it possible to run multiple clients each being served by a communications thread (http://www.clisp.org/impnotes/mt.html) which
    in turn talks to a single-threaded game mechanics thread.   Or something.
 
+I'm still experimenting with the quicklisp[2] / asdf[1] combo.   Some
+preliminary findings are:
+
+o To see packages that are relevant to something, use this:
+
+   (ql:system-apropos "vecto")
+
+o Manual loading through quicklisp
+
+   (ql:quickload "vecto")
+
+o It should be possible to do this
+
+    (asdf:load-system :foo)
+   
+   or even this
+    
+    (require :foo)
+
+   but obviously quicklisp isn't as integrated into
+   the package system as the documentation [1] claims.
+   In fact, not even this seems to work 
+   automagically:
+
+
+    (asdf:load-system :foo)
+   
+
+
+[1] http://www.quicklisp.org/beta/
+
+[2] http://common-lisp.net/project/asdf/asdf.pdf
