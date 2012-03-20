@@ -20,6 +20,13 @@
 ;; style text adventure.  It's written just for fun and to
 ;; get to play a bit with my old friend Common Lisp again.
 
+(defpackage :adv
+  (:use :common-lisp)
+  (:export :inner-game-repl))
+  
+(in-package :adv)
+
+
 
 ;;;
 ;;; THE GAME MODEL
@@ -108,7 +115,7 @@
   (:documentation "Get some hitpoints from the weapon, possibly change the weapon's state. Return the hitpoints"))
 
 (defun use-weapon (weapon attacked)
-  "Determine how many damage points the attacked  should be inflicted by the weapon,
+  "Determine how many damage points the attacked  should be inflicted by the weapon
    then apply that damage to the attacked"
   (let ((effect (extract-damage-points weapon)))
     (inflict-damage effect attacked)))
@@ -169,7 +176,10 @@
   (catch 'escape-from-game
       (inner-game-repl :input input :output output :player player)))
 
-(defun inner-game-repl (&key (input *standard-input* ) (output *standard-output*) (player *current-player*))
+(defun inner-game-repl (&key
+                        (input *standard-input* )
+                        (output *standard-output*)
+                        (player *current-player*))
   "The main loop"
 
   (setf (out-stream player) output)
