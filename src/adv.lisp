@@ -172,14 +172,11 @@
 ;;; COMMAND LINE PARSER
 ;;;
 
-(defun game-repl (&key (input *standard-input* ) (output *standard-output*) (player *current-player*))
-  (catch 'escape-from-game
-      (inner-game-repl :input input :output output :player player)))
 
-(defun inner-game-repl (&key
+
+(defun inner-game-repl (player &key
                         (input *standard-input* )
-                        (output *standard-output*)
-                        (player *current-player*))
+                        (output *standard-output*))
   "The main loop"
 
   (setf (out-stream player) output)
@@ -188,7 +185,13 @@
    (if (is-dead-p player)
        (format (out-stream player) "~% You are dead"))
    (format (out-stream player) "~% Adv>")
-   (parse-wordlist (split-string-to-words (read-command-from-user :input input)))))
+   (parse-wordlist (split-string-to-words (read-command-from-user :input input))
+                   player)))
+
+(defun game-repl (player &key (input *standard-input* ) (output *standard-output*))
+  (catch 'escape-from-game
+      (inner-game-repl player :input input :output output )))
+
 
 (defun read-command-from-user (&key (input *standard-input*))
   "Read a simple line from the command line"
@@ -233,8 +236,6 @@ if there were an empty string between them."
 (defclass Command ()
   ((names :accessor names :initarg :names)))
 
-
-           
 
 (defclass InventoryCmd (Command) ())
 (defclass LookCmd      (Command) ())
@@ -379,10 +380,10 @@ if there were an empty string between them."
   (find-if #'(lambda (names) (find  name names :test #'string-equal))
            commands :key #'names))
 
-(defun parse-wordlist (wl)
-  (let ((cmd (find-command (first wl) (commands-available-for-player *current-player*))))
+(defun parse-wordlist (wl player)
+  (let ((cmd (find-command (first wl) (commands-available-for-player player))))
     (if (not (null cmd))
-        (applyCmd cmd *current-player* wl))))
+        (applyCmd cmd player wl))))
 
 ;;
 ;;  The search engine  ;)
@@ -446,6 +447,8 @@ if there were an empty string between them."
 
 ;;
 ;; The actual game objects. For testing, not playing (obviously)
+;; This should be put into the regression test stuff, not in the
+;; game itself.
 ;;
 
 
