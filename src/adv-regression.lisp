@@ -26,10 +26,10 @@
       (assert-true (system::search-string-equal expected-output the-output))
       the-output)))
 
-(define-test test-quit-cmd
-  (run-command-oneliner "quit" "Ttfn"))
-
 (define-test test-quit-emptyness
   (run-command-oneliner "" ""))
+
+(define-test test-quit-cmd
+  (run-command-oneliner "quit" "Ttfn"))
 
 
