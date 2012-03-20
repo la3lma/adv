@@ -27,6 +27,9 @@
       the-output)))
 
 (define-test test-quit-cmd
-  (run-command-oneliner (format nil "quit~%") "Ttfn"))
+  (run-command-oneliner "quit" "Ttfn"))
+
+(define-test test-quit-emptyness
+  (run-command-oneliner "" ""))
 
 
