@@ -68,9 +68,7 @@
        *current-player*
        :input inputstream
        :output outputstream))
-    
-    ;; XXX Should get the output from the stream and print it,
-    ;;     perhaps even look for some particular output
+
     (let ((the-output (get-output-stream-string outputstream)))
       (assert-true (system::search-string-equal expected-output the-output))
       the-output)))
