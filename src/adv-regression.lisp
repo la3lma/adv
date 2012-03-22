@@ -79,4 +79,3 @@
 (define-test test-quit-cmd
   (run-command-oneliner "quit" "Ttfn"))
 
-
