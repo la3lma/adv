@@ -22,10 +22,9 @@
 
 (defpackage :adv
   (:use :common-lisp)
-  (:export :inner-game-repl))
+  (:export :inner-game-repl :game-repl))
   
 (in-package :adv)
-
 
 
 ;;;
@@ -177,7 +176,7 @@
 (defun inner-game-repl (player &key
                         (input *standard-input* )
                         (output *standard-output*))
-  "The main loop"
+  "The inner part of the main loop, it will throw an 'escape-from-game exception when the user wishes to quit"
 
   (setf (out-stream player) output)
   (setf (in-stream  player) input)
@@ -188,7 +187,10 @@
    (parse-wordlist (split-string-to-words (read-command-from-user :input input))
                    player)))
 
-(defun game-repl (player &key (input *standard-input* ) (output *standard-output*))
+(defun game-repl (player &key
+                   (input *standard-input* )
+                   (output *standard-output*))
+  "The outer part of the main loop, it will terminate when the user terminates through quit or otherwise"
   (catch 'escape-from-game
       (inner-game-repl player :input input :output output )))
 
@@ -260,8 +262,11 @@ if there were an empty string between them."
 
 
 (defun add-to-inventory (ob destination)
+  (add-all-to-inventory (list ob) destination))
+
+(defun add-all-to-inventory (obs destination)
   (setf (inventory destination)
-        (union (list ob) (inventory destination))))
+        (union obs (inventory destination))))
 
 (defun remove-from-inventory (ob source)
   (setf (inventory source)
@@ -297,11 +302,11 @@ if there were an empty string between them."
              (format stream "~% no can do")))
           ((null objects)
            (format stream "~% Couldn't find anything like that"))
-          
           (t
            (format stream  "~% Hmmm. More than one thing can be described that way. Please be more specific.")))))
 
 
+;; XXX Add IGNORE declaration
 (defun pick-most-appropriate-weapon (attacker attacked)
   "Pick the most appropriate weapon for use when the attacker attacks the attacked"
   nil ;; bare hands is a good choice ;)
@@ -436,39 +441,12 @@ if there were an empty string between them."
         when (intersection directionnames (name location) :test #'string-equal)
         collect nav))
 
-
 (defun set-navigation (origin destination names)
   "Will replace the names with a new navigation instance"
+
   (setf (navigation origin)
         (set-difference (navigation origin) (find-matching-navigations names origin)))
   (setf (navigation origin)
         (union (navigation origin)
                (list (make-instance 'navigation :names names :destination  destination)))))
-
-;;
-;; The actual game objects. For testing, not playing (obviously)
-;; This should be put into the regression test stuff, not in the
-;; game itself.
-;;
-
-
-
-(defparameter *initial-location* (make-instance 'Location :description "The start"))
-(defparameter *goal-location*    (make-instance 'Location :description "The goal"))
-(defparameter *initial-item*     (make-instance 'Item     :description "An item"))
-(defparameter *current-player*   (make-instance 'Player
-                                          :description "The player"
-                                          :location *initial-location*))
-(defparameter *first-monster*    (make-instance 'Monster
-                                          :health       30
-                                          :description "Green little qutie monster"))
-
-(defparameter *sword* (make-instance 'Weapon :description "The sword of generic strikes"))
-
-(move-object *sword*        nil  *initial-location*)
-(move-object *initial-item* nil  *initial-location*)
-(move-object *first-monster* nil *initial-location*)
-
-(set-navigation *initial-location* *goal-location*    *north*)
-(set-navigation *goal-location*    *initial-location* *south*)
 
