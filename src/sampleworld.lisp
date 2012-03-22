@@ -6,17 +6,18 @@
 ;;
 
 (defclass GameWorld (Describable Inventory)
-  ()
-  (:documentation "A set of objects and actors that defines a game")))
-
+  (
+   ;; The location where new players are teleported to when they start
+   ;; to play the game
+   (initial-location :accessor initial-location :initarg :initial-location  :initform '()))
+  (:documentation "A set of objects and actors that defines a game,
+ both players and locations are part of the inventory")))
 
 
 (defun new-instance  (&key (target nil) &rest argv)
   (let ((instance   (apply #'make-instance argv)))
     ;;; This is instance we should care about, but it doesn't tell
     ;;; us where it should go
-
-
 
     ;; XXX Perhaps we should also look dynamically for
     ;;     a context to add the instance to?
@@ -32,11 +33,21 @@
         (initial-item     (new-instance 'Item     :description "An item"))
         (player           (new-instance 'Player
                                         :description "The player"
-                                        :location initial-location))
+                                        :location initial-location)) ;; XXX  Bogus!
         (first-monster    (new-instance 'Monster
                                         :health       30
                                         :description "Green little qutie monster"))
         (sword (new-instance 'Weapon :description "The sword of generic strikes")))
+
+    (add-all-to-inventory
+     (list
+      initial-location
+      goal-location
+      initial-item
+      player
+      first-monster
+      sword
+      ) (this-game))
     
     (move-object sword         nil initial-location)
     (move-object initial-item  nil initial-location)
@@ -44,7 +55,6 @@
     
     (set-navigation initial-location goal-location    north)
     (set-navigation goal-location    initial-location south)))
-
 
 
 ;;; Applying some syntactic sugar we get:
@@ -77,23 +87,23 @@
   ;; progn.  First the deflocations is run, then the defitems, then
   ;; there may be more and nested deflocations and defitems run.  This
   ;; way the world can be build using all of the tools available in
-  ;; Common Lisp, but still be defined in a very succict manner.
+  ;; Common Lisp, but still be defined in a very succinct manner.
 
 
   ;; In order to this to play, the deflocations macro has to
   ;; first define the items, then run through the navigation stuff
   ;; to update the navigation structures in the locations.
-  (deflocations
+  (with-locations
     ((initial-location ((goal-location north))    'Location :description "The start")
      (goal-location    ((initial-lcoation south)) 'Location :description "The goal")))
-
-
-  (defitems
+  
+  (set-initial-location initial-location)
+  
+  (with-items
     (initial-item   initial-location
                     'Item     :description "An item")
     (player         initial-location
-                    'Player    :description "The player"
-                    :location initial-location)
+                    'Player    :description "The player")
     (first-monster  initial-location   'Monster
                       :health       30
                       :description "Green little qutie monster")
