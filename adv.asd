@@ -29,7 +29,9 @@
    (:static-file "README.md")
    (:static-file "COPYING")))
 
-(asdf:defsystem adv-test
+
+
+(asdf:defsystem advtest
                 :name "adv test"
                 :author "Bjørn Remseth; la3lma@gmail.com"
                 :version "0.1"
@@ -42,8 +44,5 @@
                           :serial t
                           :components ((:file "package")
                                     ;;   (:file "test-utils")
-                                    ;;   (:file "regression")
+                                       (:file "regression")
                                        ))))
-
-
-
