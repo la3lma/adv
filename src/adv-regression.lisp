@@ -16,6 +16,7 @@
 ;; game itself.
 ;;
 
+(defvar *current-world*    nil)
 (defvar *initial-location* nil)
 (defvar *goal-location*    nil)
 (defvar *initial-item*     nil)
@@ -30,7 +31,8 @@
 ;;
 
 (defun initialize-fixture ()
-
+  (setf *current-world*  (make-instance 'adv::GameWorld :description "The game we play"))
+  
   (setf *initial-location* (make-instance 'adv::Location :description "The start"))
   (setf *goal-location*    (make-instance 'adv::Location :description "The goal"))
   (setf *initial-item*     (make-instance 'adv::Item     :description "An item"))
@@ -48,7 +50,17 @@
   (adv::move-object *first-monster* nil *initial-location*)
   
   (adv::set-navigation *initial-location* *goal-location*    adv::*north*)
-  (adv::set-navigation *goal-location*    *initial-location* adv::*south*))
+  (adv::set-navigation *goal-location*    *initial-location* adv::*south*)
+
+
+  (adv::add-all-to-inventory
+   (list
+    *current-player*
+    *first-monster*
+    *sword*
+    *initial-location*
+    *goal-location*
+    ) *current-world*))
 
 
 (defun run-testgame ()
