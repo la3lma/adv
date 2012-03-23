@@ -31,10 +31,24 @@
 ;;; THE GAME MODEL
 ;;;
 
+(defclass Describable ()
+  ((description :accessor description :initarg :description :initform ""))
+  (:documentation "Something that is describable for a user"))
 
 (defclass Inventory ()
   ((inventory :accessor inventory :initarg :inventory :initform '()))
   (:documentation "Something that can contain other objects"))
+
+(defclass Inhabitant ()
+  ((world :accessor world :initarg :world)))
+
+(defclass GameWorld (Describable Inventory)
+  (
+   ;; The location where new players are teleported to when they start
+   ;; to play the game
+   (initial-location :accessor initial-location :initarg :initial-location  :initform '()))
+  (:documentation "A set of objects and actors that defines a game,
+ both players and locations are part of the inventory"))
 
 (defclass Location (Describable Inventory)
   ((navigation  :accessor navigation   :initarg :navigation :initform '())))
@@ -47,9 +61,7 @@
   ((out-stream :accessor out-stream :initarg :out-stream :initform *standard-output*)
    (in-stream  :accessor in-stream  :initarg :in-stream  :initform *standard-output*)))
 
-(defclass Describable ()
-  ((description :accessor description :initarg :description :initform ""))
-  (:documentation "Something that is describable for a user"))
+
  
 (defclass Item (Describable Located Inhabitant)
   ())
@@ -85,16 +97,7 @@
              (if (not (null direction))
                  (format (out-stream p) "Don't know how to go ~{~s~^ ~}" l)))))
 
-(defclass Inhabitant ()
-  ((world :accessor world :initarg :world)))
 
-(defclass GameWorld (Describable Inventory)
-  (
-   ;; The location where new players are teleported to when they start
-   ;; to play the game
-   (initial-location :accessor initial-location :initarg :initial-location  :initform '()))
-  (:documentation "A set of objects and actors that defines a game,
- both players and locations are part of the inventory"))
 
 ;;;
 ;;;  A BATTLE SYSTEM
@@ -256,7 +259,6 @@ if there were an empty string between them."
 (defclass Command ()
   ((names :accessor names :initarg :names)))
 
-
 (defclass InventoryCmd (Command) ())
 (defclass LookCmd      (Command) ())
 (defclass GoCmd        (Command) ())
@@ -265,7 +267,6 @@ if there were an empty string between them."
 (defclass QuitCmd      (Command) ())
 (defclass TakeCmd      (Command) ())
 (defclass DropCmd      (Command) ())
-
 
 (defgeneric command-available-for-player-p (command player)
   (:documentation "Return t if the command is available to the user, nil otherwise")
