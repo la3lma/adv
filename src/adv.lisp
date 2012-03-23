@@ -43,7 +43,7 @@
 (defclass  Located ()
   ((location    :accessor location    :initarg :location)))
 
-(defclass Player (Describable Inventory Located Fighter)
+(defclass Player (Describable Inventory Located Fighter Inhabitant)
   ((out-stream :accessor out-stream :initarg :out-stream :initform *standard-output*)
    (in-stream  :accessor in-stream  :initarg :in-stream  :initform *standard-output*)))
 
@@ -51,7 +51,7 @@
   ((description :accessor description :initarg :description :initform ""))
   (:documentation "Something that is describable for a user"))
  
-(defclass Item (Describable Located)
+(defclass Item (Describable Located Inhabitant)
   ())
 
 
@@ -84,6 +84,17 @@
                  (return-from move)))
              (if (not (null direction))
                  (format (out-stream p) "Don't know how to go ~{~s~^ ~}" l)))))
+
+(defclass Inhabitant ()
+  ((world :accessor world :initarg :world)))
+
+(defclass GameWorld (Describable Inventory)
+  (
+   ;; The location where new players are teleported to when they start
+   ;; to play the game
+   (initial-location :accessor initial-location :initarg :initial-location  :initform '()))
+  (:documentation "A set of objects and actors that defines a game,
+ both players and locations are part of the inventory"))
 
 ;;;
 ;;;  A BATTLE SYSTEM
@@ -172,12 +183,13 @@
 ;;;
 
 
-
 (defun inner-game-repl (player &key
                         (input *standard-input* )
                         (output *standard-output*))
   "The inner part of the main loop, it will throw an 'escape-from-game exception when the user wishes to quit"
-
+  (if (null player)
+      (error "player can't be null"))
+  
   (setf (out-stream player) output)
   (setf (in-stream  player) input)
   (loop
@@ -185,7 +197,13 @@
        (format (out-stream player) "~% You are dead"))
    (format (out-stream player) "~% Adv>")
    (parse-wordlist (split-string-to-words (read-command-from-user :input input))
-                   player)))
+                   player))
+  (move-all-monsters (world  player)))
+
+(defun move-all-monsters (world)
+  "Should move all monsters within a world"
+  (format *standard-output* "~% Placeholder for monster movement")
+  )
 
 (defun game-repl (player &key
                    (input *standard-input* )
