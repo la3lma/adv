@@ -283,9 +283,19 @@ if there were an empty string between them."
 (defun add-to-inventory (ob destination)
   (add-all-to-inventory (list ob) destination))
 
+(defgeneric add-backpointer (ob destination)
+  (:method-combination progn)
+  (:method  progn ((o T)(d T)))
+  (:method  progn ((o Inhabitant) (d Gameworld))
+           (setf (world o) d)))
+
+
 (defun add-all-to-inventory (obs destination)
   (setf (inventory destination)
-        (union obs (inventory destination))))
+        (union obs (inventory destination)))
+  (dolist (ob obs)
+    (add-backpointer ob destination)))
+
 
 (defun remove-from-inventory (ob source)
   (setf (inventory source)
