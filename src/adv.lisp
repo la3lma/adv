@@ -281,7 +281,7 @@ if there were an empty string between them."
 
 
 (defun add-to-inventory (ob destination)
-  (add-all-to-inventory (list ob) destination))
+  (add-all-to-inventory destination (list ob)))
 
 (defgeneric add-backpointer (ob destination)
   (:method-combination progn)
@@ -290,7 +290,7 @@ if there were an empty string between them."
            (setf (world o) d)))
 
 
-(defun add-all-to-inventory (obs destination)
+(defun add-all-to-inventory (destination obs)
   (setf (inventory destination)
         (union obs (inventory destination)))
   (dolist (ob obs)

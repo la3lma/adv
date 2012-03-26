@@ -54,13 +54,14 @@
 
 
   (adv::add-all-to-inventory
+   *current-world*
    (list
     *current-player*
     *first-monster*
     *sword*
     *initial-location*
     *goal-location*
-    ) *current-world*))
+    )))
 
 
 (defun run-testgame ()
