@@ -73,7 +73,7 @@
 (defun run-command-oneliner (inputstring expected-output)
   "Run a sequence of game commands encoded in the inputstream and return the output from the game as a string"
   (initialize-fixture)
-  (let* ((inputstream (make-string-input-stream (format nil "quit~%")))
+  (let* ((inputstream (make-string-input-stream (format nil "~a ~%quit~%" inputstring)))
          (outputstream (make-string-output-stream)))
 
     (catch 'adv::escape-from-game
@@ -82,7 +82,10 @@
        :input inputstream
        :output outputstream))
 
-    (let ((the-output (get-output-stream-string outputstream)))
+    (let* ((the-output (get-output-stream-string outputstream)))
+      (format *standard-output* "~% The input we gave is   ~s" inputstring)
+      (format *standard-output* "~%    The output are expecting is  ~s" expected-output)
+      (format *standard-output* "~%    The output we got was ~s" the-output)
       (assert-true (system::search-string-equal expected-output the-output))
       the-output)))
 
@@ -91,4 +94,15 @@
 
 (define-test test-quit-cmd
   (run-command-oneliner "quit" "Ttfn"))
+
+
+(define-test test-look-for-sword
+  (run-command-oneliner "look" "Sword of generic strikes"))
+
+
+(define-test test-look-for-the-start
+  (run-command-oneliner "look" "The start"))
+
+(define-test test-take-sword
+  (run-command-oneliner "take sword" "Got it"))
 
