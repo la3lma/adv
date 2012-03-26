@@ -463,7 +463,10 @@ if there were an empty string between them."
 
 (defparameter *north* '("north" "n"))
 (defparameter *south* '("south" "s"))
-
+(defparameter *east*  '("east"  "e"))
+(defparameter *west*  '("west"  "w"))
+(defparameter *up*    '("up"    "u"))
+(defparameter *down*  '("down"  "d"))
 
 (defun find-matching-navigations (directionnames location)
   (loop for nav in (navigation location)
