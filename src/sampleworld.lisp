@@ -79,9 +79,9 @@
 
 
 ;; Pouring on more sugar we get this:
+ 
 
-
-(defgame SampleGame ()
+(defgame SampleGame
 
   ;; The body of this definition must in fact be interpreted as a
   ;; progn.  First the deflocations is run, then the defitems, then
@@ -89,24 +89,23 @@
   ;; way the world can be build using all of the tools available in
   ;; Common Lisp, but still be defined in a very succinct manner.
 
-
   ;; In order to this to play, the deflocations macro has to
   ;; first define the items, then run through the navigation stuff
   ;; to update the navigation structures in the locations.
-  (with-locations
-    ((initial-location ((goal-location north))    'Location :description "The start")
-     (goal-location    ((initial-lcoation south)) 'Location :description "The goal")))
+  (declare-locations
+    ((initial-location ((goal-location    (north)))  'Location :description "The start")
+     (goal-location    ((initial-lcoation (south)))  'Location :description "The goal")))
   
   (set-initial-location initial-location)
   
-  (with-items
+  (declare-locations
     (initial-item   initial-location
                     'Item     :description "An item")
     (player         initial-location
                     'Player    :description "The player")
     (first-monster  initial-location   'Monster
                       :health       30
-                      :description "Green little qutie monster")
+                      :description "Green little monster")
     (sword initial-location 'Weapon :description "The sword of generic strikes")))
    
 ;; We should have serialization/deserialization, but at present it's
