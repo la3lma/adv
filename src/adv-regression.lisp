@@ -70,7 +70,7 @@
   (game-repl *current-player*))
 
 
-(defun run-command-oneliner (inputstring expected-output)
+(defun run-command-oneliner (inputstring expected-output &key (tracep nil))
   "Run a sequence of game commands encoded in the inputstream and return the output from the game as a string"
   (initialize-fixture)
   (let* ((inputstream (make-string-input-stream (format nil "~a ~%quit~%" inputstring)))
@@ -83,9 +83,11 @@
        :output outputstream))
 
     (let* ((the-output (get-output-stream-string outputstream)))
-      (format *standard-output* "~% The input we gave is   ~s" inputstring)
-      (format *standard-output* "~%    The output are expecting is  ~s" expected-output)
-      (format *standard-output* "~%    The output we got was ~s" the-output)
+      (when tracep
+        (format *standard-output* "~% The input we gave is   ~s" inputstring)
+        (format *standard-output* "~%    The output are expecting is  ~s" expected-output)
+        (format *standard-output* "~%    The output we got was ~s" the-output))
+      
       (assert-true (system::search-string-equal expected-output the-output))
       the-output)))
 
