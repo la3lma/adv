@@ -8,6 +8,9 @@
 #      2) Make it nice, ideomatically correct, using quicklisp and adv.
 #
 
+# Update the tags file
+etags $(find . -name '*.lisp')
+
 ## This should have been sufficient but isn't
  clisp -q -x '(asdf:compile-system :adv)'
 
