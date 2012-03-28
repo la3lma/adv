@@ -52,8 +52,8 @@
   (adv::move-object *first-monster* nil *initial-location*)
 
   ;; Give the monster a hammer and a feather
-  (adv::move-object *hammer*  nil *first-monster*)
   (adv::move-object *feather* nil *first-monster*)
+  (adv::move-object *hammer*  nil *first-monster*)
   
   (adv::set-navigation *initial-location* *goal-location*    adv::*north*)
   (adv::set-navigation *goal-location*    *initial-location* adv::*south*)

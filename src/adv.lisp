@@ -343,13 +343,10 @@ if there were an empty string between them."
 
 (defun pick-best-weapon (attacker attacked)
   #'(lambda (old new)
-      (format *standard-output* "~% Picking weapons: ~S ~S" old new)
-      ;; XXX In this, really simple implementation, we always stick
-      ;;     to the last weapon that is proposed no matter how
-      ;;  appropriate or not it is.
-      new
-      )
-  )
+      (if (> (strength old)
+             (strength new))
+          old
+        new)))
 
 
 ;; Btw, this is a really horrible heuristic.
