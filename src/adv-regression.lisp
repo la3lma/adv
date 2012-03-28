@@ -45,13 +45,12 @@
   
   (setf *sword* (make-instance 'adv::Weapon :description "The sword of generic strikes"))
   
-  (adv::move-object *sword*        nil  *initial-location*)
-  (adv::move-object *initial-item* nil  *initial-location*)
+  (adv::move-object *sword*         nil *initial-location*)
+  (adv::move-object *initial-item*  nil *initial-location*)
   (adv::move-object *first-monster* nil *initial-location*)
   
   (adv::set-navigation *initial-location* *goal-location*    adv::*north*)
   (adv::set-navigation *goal-location*    *initial-location* adv::*south*)
-
 
   (adv::add-all-to-inventory
    *current-world*
@@ -97,14 +96,17 @@
 (define-test test-quit-cmd
   (run-command-oneliner "quit" "Ttfn"))
 
-
 (define-test test-look-for-sword
   (run-command-oneliner "look" "Sword of generic strikes"))
-
 
 (define-test test-look-for-the-start
   (run-command-oneliner "look" "The start"))
 
 (define-test test-take-sword
   (run-command-oneliner "take sword" "Got it"))
+
+
+(define-test test-take-sword-then-strike-monster
+  (run-command-oneliner "take sword
+kill monster" "Got it"))
 

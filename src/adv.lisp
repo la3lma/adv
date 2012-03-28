@@ -1,4 +1,4 @@
-;; -*-LISP-*-
+; -*-LISP-*-
 
 ;;
 ;; Copyright 2012 Bjørn Remseth (rmz@rmz.no)
@@ -335,11 +335,37 @@ if there were an empty string between them."
            (format stream  "~% Hmmm. More than one thing can be described that way. Please be more specific.")))))
 
 
-;; XXX Add IGNORE declaration
-(defun pick-most-appropriate-weapon (attacker attacked)
-  "Pick the most appropriate weapon for use when the attacker attacks the attacked"
-  nil ;; bare hands is a good choice ;)
+(defun is-weapon-p (item)
+  ;; XXX Check if item has Weapon as one of its superclasses.
+  
   )
+
+(defun weapons-available-for-player (player)
+  (loop for item in (inventory player)
+        when (is-weapon-p item)
+        collect item))
+
+(defun pick-best-weapon (attacker attacked)
+  #'(lambda (old new)
+      (format *standard-output* "~% Picking weapons: ~S ~S" old new)
+      ;; XXX In this, really simple implementation, we always stick
+      ;;     to the first proposed weapon.
+      new
+      )
+  )
+
+
+;; Btw, this is a really horrible heuristic.
+(defun pick-most-appropriate-weapon (attacker attacked)
+  "Pick the most appropriate for the attacker to attack the attacked, if no weapon can be found, nil is returned"
+  (let ((weapons (weapons-available-for-player attacker)))
+    (cond ((null weapons)
+           nil)
+          ((null (cdr weapons))
+           (car weapons)
+           )
+          (t  (reduce (pick-best-weapon attacker attacked)
+                      weapons)))))
 
 
 (defun counterattack (defender attacker)
