@@ -106,8 +106,8 @@
   (:documentation "Base class for fighter.  Used to define the fighting system"))
 
 (defclass Weapon (Item)
-  ((strength     :accessor strength     :initarg :out-stream :initform 1.0)
-   (reliability  :accessor reliability  :initarg :out-stream :initform 1.0))
+  ((strength     :accessor strength     :initarg :strength    :initform 3.0)
+   (reliability  :accessor reliability  :initarg :reliability :initform 1.0))
   (:documentation "Base class for weapon.  Used to define the fighting system"))
 
 (defclass Monster (Player)
@@ -115,8 +115,8 @@
 
 (defgeneric extract-damage-points (weapon)
   (:method ((w Weapon))
-           3.0 ;; All weapons inflict 3 hp damage by default ;)
-               ;; Reliability should be  part of this calculation but isn't
+           (strength w) 
+           ;; Reliability should be  part of this calculation but at present isn't
            )
 
   (:method ((w Fighter))
