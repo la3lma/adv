@@ -43,7 +43,8 @@
                                                   :health       30
                                                   :description "Green little qutie monster"))
   
-  (setf *sword* (make-instance 'adv::Weapon :description "The sword of generic strikes"))
+  (setf *sword*   (make-instance 'adv::Weapon :description "The sword of generic strikes"))
+  (setf *hammer*  (make-instance 'adv::Weapon :description "The hammer of serious blows"))
   
   (adv::move-object *sword*         nil *initial-location*)
   (adv::move-object *initial-item*  nil *initial-location*)
@@ -58,6 +59,7 @@
     *current-player*
     *first-monster*
     *sword*
+    *hammer*
     *initial-location*
     *goal-location*
     )))
