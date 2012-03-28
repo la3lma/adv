@@ -60,12 +60,9 @@
 (defclass Player (Describable Inventory Located Fighter Inhabitant)
   ((out-stream :accessor out-stream :initarg :out-stream :initform *standard-output*)
    (in-stream  :accessor in-stream  :initarg :in-stream  :initform *standard-output*)))
-
-
  
 (defclass Item (Describable Located Inhabitant)
   ())
-
 
 (defclass Navigation ()
   ((names  :accessor names   :initarg :names)
@@ -334,11 +331,10 @@ if there were an empty string between them."
           (t
            (format stream  "~% Hmmm. More than one thing can be described that way. Please be more specific.")))))
 
+(defparameter *weapons-class* (find-class 'Weapon))
 
 (defun is-weapon-p (item)
-  ;; XXX Check if item has Weapon as one of its superclasses.
-  
-  )
+  (subtypep (type-of item) *weapons-class*))
 
 (defun weapons-available-for-player (player)
   (loop for item in (inventory player)
@@ -351,7 +347,6 @@ if there were an empty string between them."
       ;; XXX In this, really simple implementation, we always stick
       ;;     to the last weapon that is proposed no matter how
       ;;  appropriate or not it is.
-      
       new
       )
   )
