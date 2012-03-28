@@ -45,13 +45,15 @@
   
   (setf *sword*   (make-instance 'adv::Weapon :description "The sword of generic strikes"))
   (setf *hammer*  (make-instance 'adv::Weapon :description "The hammer of serious blows"))
+  (setf *feather* (make-instance 'adv::Weapon :description "The feather of fiendish ticles" :strength 0.1))
   
   (adv::move-object *sword*         nil *initial-location*)
   (adv::move-object *initial-item*  nil *initial-location*)
   (adv::move-object *first-monster* nil *initial-location*)
 
-  ;; Give the monster a hammer
-  (adv::move-object *hammer* nil *first-monster*)
+  ;; Give the monster a hammer and a feather
+  (adv::move-object *hammer*  nil *first-monster*)
+  (adv::move-object *feather* nil *first-monster*)
   
   (adv::set-navigation *initial-location* *goal-location*    adv::*north*)
   (adv::set-navigation *goal-location*    *initial-location* adv::*south*)
@@ -63,6 +65,7 @@
     *first-monster*
     *sword*
     *hammer*
+    *feather*
     *initial-location*
     *goal-location*
     )))
@@ -113,5 +116,5 @@
 
 (define-test test-take-sword-then-strike-monster
   (run-command-oneliner "take sword
-kill monster" "Got it"))
+kill monster" "You are dead"))
 
