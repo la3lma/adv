@@ -1,87 +1,106 @@
 
-src/adv.lisp,2177
-(defclass Inventory 29,848
-(defclass Location 33,1005
-(defclass  Located 37,1127
-(defclass Player 40,1210
-(defclass Describable 44,1442
-(defclass Item 48,1607
-(defclass Navigation 52,1652
-(defgeneric describe-for-user 56,1786
-(defgeneric move 67,2407
-(defclass Fighter 86,3077
-(defclass Weapon 91,3314
-(defclass Monster 96,3573
-(defgeneric extract-damage-points 99,3607
-(defun use-weapon 110,4044
-(defun is-alive-p 123,4481
-(defgeneric is-dead-p 126,4535
-(defgeneric health-reaction 133,4718
-(defgeneric inflict-damage 142,5199
-(defgeneric attack 151,5574
-(defun game-repl 168,6248
-(defun inner-game-repl 172,6448
-(defun read-command-from-user 183,6863
-(defun split-by-one-space 188,6993
-(defun split-string-to-words 198,7332
-(defun split-on-word 205,7454
-(defclass Command 223,7872
-(defclass InventoryCmd 229,7953
-(defclass LookCmd 230,7990
-(defclass GoCmd 231,8027
-(defclass FightCmd 232,8064
-(defclass HelpCmd 233,8101
-(defclass QuitCmd 234,8138
-(defclass TakeCmd 235,8175
-(defclass DropCmd 236,8212
-(defgeneric command-available-for-player-p 239,8251
-(defun add-to-inventory 251,8670
-(defun remove-from-inventory 255,8796
-(defgeneric movement-ok 259,8906
-(defgeneric move-object 267,9128
-(defmethod move-object 270,9208
-(defmethod move-object 273,9324
-(defmethod move-object 276,9436
-(defun find-and-move 280,9549
-(defun pick-most-appropriate-weapon 294,10164
-(defun counterattack 300,10350
-(defgeneric applyCmd 304,10537
-(defparameter *commands*347,12349
-(defun commands-available-for-player 358,12963
-(defun map-commands-to-command-names 364,13162
-(defun find-command 367,13258
-(defun parse-wordlist 372,13435
-(defparameter *stopwords* 381,13657
-(defgeneric matches 383,13704
-(defun remove-all-x 396,14105
-(defun identify 401,14226
-(defparameter *north* 419,14668
-(defparameter *south* 420,14706
-(defun find-matching-navigations 423,14746
-(defun set-navigation 429,14950
-(defparameter *initial-location* 443,15402
-(defparameter *goal-location* 444,15487
-(defparameter *initial-item* 445,15571
-(defparameter *current-player* 446,15654
-(defparameter *first-monster* 449,15851
-(defparameter *sword* 453,16054
+src/adv-regression.lisp,611
+(defpackage :adv-regression5,56
+(defvar *current-world* 19,460
+(defvar *initial-location* 20,492
+(defvar *goal-location* 21,524
+(defvar *initial-item* 22,556
+(defvar *current-player* 23,588
+(defvar *first-monster* 24,620
+(defvar *sword* 25,652
+(defun initialize-fixture 33,838
+(defun run-testgame 66,2231
+(defun run-command-oneliner 72,2345
+(define-test test-quit-emptyness93,3279
+(define-test test-quit-cmd96,3345
+(define-test test-look-for-sword99,3413
+(define-test test-look-for-the-start102,3507
+(define-test test-take-sword105,3590
+(define-test test-take-sword-then-strike-monster109,3669
+
+src/adv.lisp,2380
+(defpackage :adv23,817
+(defclass Describable 34,948
+(defclass Inventory 38,1112
+(defclass Inhabitant 42,1269
+(defclass GameWorld 45,1339
+(defclass Location 53,1699
+(defclass  Located 57,1821
+(defclass Player 60,1904
+(defclass Item 66,2150
+(defclass Navigation 70,2206
+(defgeneric describe-for-user 74,2340
+(defgeneric move 85,2961
+(defclass Fighter 106,3633
+(defclass Weapon 111,3870
+(defclass Monster 116,4129
+(defgeneric extract-damage-points 119,4163
+(defun use-weapon 130,4600
+(defun is-alive-p 143,5036
+(defgeneric is-dead-p 146,5090
+(defgeneric health-reaction 153,5273
+(defgeneric inflict-damage 162,5754
+(defgeneric attack 171,6129
+(defun inner-game-repl 189,6804
+(defun move-all-monsters 206,7465
+(defun game-repl 211,7614
+(defun read-command-from-user 219,7933
+(defun split-by-one-space 224,8063
+(defun split-string-to-words 234,8402
+(defun split-on-word 241,8524
+(defclass Command 259,8942
+(defclass InventoryCmd 262,9009
+(defclass LookCmd 263,9046
+(defclass GoCmd 264,9083
+(defclass FightCmd 265,9120
+(defclass HelpCmd 266,9157
+(defclass QuitCmd 267,9194
+(defclass TakeCmd 268,9231
+(defclass DropCmd 269,9268
+(defgeneric command-available-for-player-p 271,9306
+(defun add-to-inventory 283,9725
+(defgeneric add-backpointer 286,9815
+(defun add-all-to-inventory 293,10005
+(defun remove-from-inventory 300,10188
+(defgeneric movement-ok 304,10298
+(defgeneric move-object 312,10520
+(defmethod move-object 315,10600
+(defmethod move-object 318,10716
+(defmethod move-object 321,10828
+(defun find-and-move 325,10941
+(defun is-weapon-p 338,11545
+(defun weapons-available-for-player 343,11641
+(defun pick-best-weapon 348,11781
+(defun pick-most-appropriate-weapon 359,12096
+(defun counterattack 371,12533
+(defgeneric applyCmd 375,12720
+(defparameter *commands*418,14532
+(defun commands-available-for-player 429,15146
+(defun map-commands-to-command-names 435,15345
+(defun find-command 438,15441
+(defun parse-wordlist 443,15618
+(defparameter *stopwords* 452,15827
+(defgeneric matches 454,15874
+(defun remove-all-x 467,16275
+(defun identify 472,16396
+(defparameter *north* 490,16838
+(defparameter *south* 491,16876
+(defparameter *east* 492,16914
+(defparameter *west* 493,16952
+(defparameter *up* 494,16990
+(defparameter *down* 495,17028
+(defun find-matching-navigations 497,17067
+(defun set-navigation 502,17270
 
 src/attic.lisp,35
 (defun run-repl-as-server 53,1442
 
-src/sampleworld.lisp,141
-(defclass GameWorld 8,186
-(defun new-instance 14,309
-(defgame SampleGame 29,761
-(defgame SampleGame 51,1807
-(defgame SampleGame 74,2660
+src/defgame.lisp,24
+(defmacro defgame 7,74
 
-adv.asd,465
-               ;; :uuid uuid16,326
-               ;; :uuid  ;; Unique identifiers16,326
-               :lisp-unit unit18,415
-               :lisp-unit  ;; Unit tests18,415
-               ;; :parenscript parenscript19,456
-               ;; :parenscript ;; common lisp to javascript translator19,456
-               ;; :split-sequence sequence20,527
-               ;; :split-sequence ;; Splitting stuff into sequences. (This will actually be useful)20,527
+src/sampleworld.lisp,140
+(defclass GameWorld 8,186
+(defun new-instance 17,548
+(defgame SampleGame 30,998
+(defgame SampleGame 61,2224
+(defgame SampleGame84,3078
