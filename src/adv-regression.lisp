@@ -113,7 +113,6 @@
 (define-test test-take-sword
   (run-command-oneliner "take sword" "Got it"))
 
-
 (define-test test-take-sword-then-strike-monster
   (run-command-oneliner "take sword
 kill monster" "You are dead"))
