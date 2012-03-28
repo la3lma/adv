@@ -49,6 +49,9 @@
   (adv::move-object *sword*         nil *initial-location*)
   (adv::move-object *initial-item*  nil *initial-location*)
   (adv::move-object *first-monster* nil *initial-location*)
+
+  ;; Give the monster a hammer
+  (adv::move-object *hammer* nil *first-monster*)
   
   (adv::set-navigation *initial-location* *goal-location*    adv::*north*)
   (adv::set-navigation *goal-location*    *initial-location* adv::*south*)
