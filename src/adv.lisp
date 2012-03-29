@@ -518,4 +518,3 @@ if no weapon can be found, nil is returned"
   (setf (navigation origin)
         (union (navigation origin)
                (list (make-instance 'navigation :names names :destination  destination)))))
-

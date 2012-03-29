@@ -30,18 +30,23 @@
 ;; game itself.
 ;;
 
-(defun initialize-fixture ()
+(defun initialize-fixture (&key (input *standard-input*) (output *standard-output*))
+  
   (setf *current-world*  (make-instance 'adv::GameWorld :description "The game we play"))
   
   (setf *initial-location* (make-instance 'adv::Location :description "The start"))
   (setf *goal-location*    (make-instance 'adv::Location :description "The goal"))
   (setf *initial-item*     (make-instance 'adv::Item     :description "An item"))
   (setf *current-player*   (make-instance 'adv::Player
-                                                  :description "The player"
+                                          :description "The player"
+                                          :in-stream input
+                                          :out-stream output
                                                   :location *initial-location*))
   (setf *first-monster*    (make-instance 'adv::Monster
-                                                  :health       30
-                                                  :description "Green little qutie monster"))
+                                          :health       30
+                                          :in-stream input
+                                          :out-stream output
+                                          :description "Green little qutie monster"))
   
   (setf *sword*   (make-instance 'adv::Weapon :description "The sword of generic strikes"))
   (setf *hammer*  (make-instance 'adv::Weapon :description "The hammer of serious blows"))
@@ -79,16 +84,17 @@
 
 (defun run-command-oneliner (inputstring expected-output &key (tracep nil))
   "Run a sequence of game commands encoded in the inputstream and return the output from the game as a string"
-  (initialize-fixture)
   (let* ((inputstream (make-string-input-stream (format nil "~a ~%quit~%" inputstring)))
          (outputstream (make-string-output-stream)))
-
+    
+    (initialize-fixture :input inputstream :output outputstream)
+    
     (catch 'adv::escape-from-game
       (adv::inner-game-repl
        *current-player*
        :input inputstream
        :output outputstream))
-
+    
     (let* ((the-output (get-output-stream-string outputstream)))
       (when tracep
         (format *standard-output* "~% The input we gave is   ~s" inputstring)
