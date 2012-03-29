@@ -115,12 +115,12 @@
 
 (defgeneric extract-damage-points (weapon)
   (:method ((w Weapon))
-           (strength w) 
-           ;; Reliability should be  part of this calculation but at present isn't
+           (strength w)
+           ; (* (random 1) (strength w))
            )
 
-  (:method ((w Fighter))
-           2.0 ;; All fighters inflict 2 hp damage by default
+  (:method ((f Fighter))
+           (* (strength f) (health f))
            )
   (:documentation "Get some hitpoints from the weapon, possibly change the weapon's state. Return the hitpoints"))
 
@@ -128,6 +128,7 @@
   "Determine how many damage points the attacked  should be inflicted by the weapon
    then apply that damage to the attacked"
   (let ((effect (extract-damage-points weapon)))
+    (format *standard-output* "~% effect of weapon ~s is ~s" weapon effect)
     (inflict-damage effect attacked)))
 
 
