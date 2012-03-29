@@ -366,7 +366,8 @@ if there were an empty string between them."
 
 ;; Btw, this is a really horrible heuristic.
 (defun pick-most-appropriate-weapon (attacker attacked)
-  "Pick the most appropriate for the attacker to attack the attacked, if no weapon can be found, nil is returned"
+  "Pick the most appropriate for the attacker to attack the attacked,
+if no weapon can be found, nil is returned"
   (let ((weapons (weapons-available-for-player attacker)))
     (cond ((null weapons)
            nil)
