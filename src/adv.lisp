@@ -1,4 +1,4 @@
-; -*-LISP-*-
+;; -*-LISP-*-
 
 ;;
 ;; Copyright 2012 Bjørn Remseth (rmz@rmz.no)
@@ -214,8 +214,8 @@
 
 (defun move-all-monsters (world)
   "Should move all monsters within a world"
-  (format *standard-output* "~% Placeholder for monster movement")
-  )
+  (declare (ignore world))
+  (format *standard-output* "~% Placeholder for monster movement"))
 
 (defun game-repl (player &key
                    (input *standard-input* )
@@ -354,6 +354,9 @@ if there were an empty string between them."
         collect item))
 
 (defun pick-best-weapon (attacker attacked)
+  (declare (ignore attacker)
+           (ignore attacked))
+
   #'(lambda (old new)
       (if (> (strength old)
              (strength new))
@@ -394,8 +397,8 @@ if there were an empty string between them."
                (split-on-word (cdr query) '("with" "using"))
              (let ((target (identify target-desc (inventory (location p))))
                    (weapon (identify weapon-desc (inventory p))))
-               (let ((tgt (if (null target) null (car target)))
-                     (wpn (if (null weapon) p (car weapon))))
+               (let ((tgt (if (null target) nil (car target)))
+                     (wpn (if (null weapon) p   (car weapon))))
                  (attack p  tgt  wpn)
                  (counterattack tgt p)))))
 
