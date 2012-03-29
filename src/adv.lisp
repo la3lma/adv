@@ -149,12 +149,13 @@
            (<= (health fighter) 0.0000001)))
 
 (defgeneric msg-stream (recipient)
-  (:method ((generic T))
+  (:method ((r T))
+           (format *standard-output* "~% msg stream for generic ~S" r) ;; For debugging
            *standard-output*)
 
   (:method ((p Player))
-           (out-stream p))
-  )
+           (format *standard-output* "~% msg stream for player ~S is ~S" p (out-stream p)) ;; For debugging
+           (out-stream p)))
  
 (defun msg (recipient &rest format-args)
      (apply #'format (cons  (msg-stream recipient) format-args)))
