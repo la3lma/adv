@@ -124,12 +124,12 @@
            )
   (:documentation "Get some hitpoints from the weapon, possibly change the weapon's state. Return the hitpoints"))
 
-(defun use-weapon (weapon attacked)
+(defun use-weapon (user weapon attacked)
   "Determine how many damage points the attacked  should be inflicted by the weapon
    then apply that damage to the attacked"
   (let ((effect (extract-damage-points weapon)))
-    (format *standard-output* "~% effect of weapon ~s is ~s" weapon effect)
-    (inflict-damage effect attacked)))
+    (msg user "~% effect of weapon ~s is ~s" weapon effect)
+    (inflict-damage user effect attacked)))
 
 
 ;; XXX This is the core of the battle system, this is where
@@ -148,6 +148,17 @@
   (:method and ((fighter Fighter))
            (<= (health fighter) 0.0000001)))
 
+(defgeneric msg-stream (recipient)
+  (:method ((generic T))
+           *standard-output*)
+
+  (:method ((p Player))
+           (out-stream p))
+  )
+ 
+(defun msg (recipient &rest format-args)
+     (apply #'format (cons  (msg-stream recipient) format-args)))
+
 (defgeneric health-reaction (actor newHealth)
   (:method ((fighter Fighter)(newHealth Number))
            (setf (health fighter) newHealth)
@@ -155,11 +166,11 @@
            ;;     be allowed to act, but may be allowed to react, and may
            ;;     perhaps be reanimated using a healing spell (not yet defined)
            (when (is-dead-p fighter)
-             (format *standard-output* "~% ~a dies" (description fighter)))))
+             (msg fighter "~% ~a dies" (description fighter)))))
 
-(defgeneric inflict-damage  (damage attacked)
-  (:method ((damage Number) (attacked Fighter))
-           (format *standard-output* "~%   Inflicting damage ~f hp to fighter ~a with initial health ~f"
+(defgeneric inflict-damage  (user damage attacked)
+  (:method ((user T) (damage Number) (attacked Fighter))
+           (msg user "~%   Inflicting damage ~f hp to fighter ~a with initial health ~f"
                    damage (description attacked) (health attacked))
 
            (health-reaction
@@ -170,12 +181,12 @@
   (:method ((attacker Fighter) (attacked Fighter) (weapon T))
            ;; If we don't have a weapon, let the attacker be the
            ;; weapon.
-           (format *standard-output* "~% ~@(~a~) attacks ~a with his own hands" (description attacker) (description attacked))
-           (use-weapon attacker attacked))
+           (msg attacker  "~% ~@(~a~) attacks ~a with his own hands" (description attacker) (description attacked))
+           (use-weapon attacker attacker attacked))
   
   (:method ((attacker Fighter) (attacked Fighter) (weapon Weapon))
-           (format *standard-output* "~% ~@(~a~) attacks ~a with ~a" (description attacker) (description attacked) (description weapon))
-           (use-weapon weapon attacked))
+           (msg attacker "~% ~@(~a~) attacks ~a with ~a" (description attacker) (description attacked) (description weapon))
+           (use-weapon attacker weapon attacked))
 
   (:documentation "..."))
 
