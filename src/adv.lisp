@@ -148,13 +148,16 @@
   (:method and ((fighter Fighter))
            (<= (health fighter) 0.0000001)))
 
+
+
 (defgeneric msg-stream (recipient)
   (:method ((r T))
-           (format *standard-output* "~% msg stream for generic ~S" r) ;; For debugging
            *standard-output*)
-
+  (:method ((l Location))
+           (apply #'make-broadcast-stream (mapcar #'msg-stream (find-players l))))
+  (:method ((l GameWorld))
+           (apply #'make-broadcast-stream (mapcar #'msg-stream (find-players l))))
   (:method ((p Player))
-           (format *standard-output* "~% msg stream for player ~S is ~S" p (out-stream p)) ;; For debugging
            (out-stream p)))
  
 (defun msg (recipient &rest format-args)
@@ -344,15 +347,27 @@ if there were an empty string between them."
           (t
            (format stream  "~% Hmmm. More than one thing can be described that way. Please be more specific.")))))
 
-(defparameter *weapons-class* (find-class 'Weapon))
 
-(defun is-weapon-p (item)
-  (subtypep (type-of item) *weapons-class*))
+;;
+;; Finding objects of various types
+;;
+
+(defparameter *weapons-class* (find-class 'Weapon))
+(defparameter *player-class* (find-class 'Player))
+
+
+(defun find-objects-of-type (container query-type)
+  "Find objects in an inventory-class container that matches the query type"
+  (loop for item in (inventory container)
+        when (subtypep (type-of item) query-type)
+        collect item))
 
 (defun weapons-available-for-player (player)
-  (loop for item in (inventory player)
-        when (is-weapon-p item)
-        collect item))
+  (find-objects-of-type player *weapons-class*))
+
+
+(defun find-players (container)
+  (find-objecs-of-type container *player-class*))
 
 (defun pick-best-weapon (attacker attacked)
   (declare (ignore attacker)
