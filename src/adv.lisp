@@ -347,14 +347,14 @@ if there were an empty string between them."
           (t
            (format stream  "~% Hmmm. More than one thing can be described that way. Please be more specific.")))))
 
-
 ;;
 ;; Finding objects of various types
 ;;
 
-(defparameter *weapons-class* (find-class 'Weapon))
-(defparameter *player-class* (find-class 'Player))
-
+;; XXX Perhaps  this function should be called "collect" intead, since
+;; it does not, as the common lisp "find" function find only the first
+;; matching element, it collects all the matching elements.  Think
+;; about it.
 
 (defun find-objects-of-type (container query-type)
   "Find objects in an inventory-class container that matches the query type"
@@ -362,14 +362,18 @@ if there were an empty string between them."
         when (subtypep (type-of item) query-type)
         collect item))
 
-(defun weapons-available-for-player (player)
-  (find-objects-of-type player *weapons-class*))
+(defun find-objects-with-typename (container query-typename)
+  "Find objects in an inventory-class container that matches the query typename"
+  (find-objects-of-type container (find-class query-typename)))
 
+(defun weapons-available-for-player (player)
+  (find-objects-with-typename player 'Weapon))
 
 (defun find-players (container)
-  (find-objecs-of-type container *player-class*))
+  (find-objects-with-typename container 'Player))
 
 (defun pick-best-weapon (attacker attacked)
+  "Today's simple heuristic is simply to get the strongest weapon available no matter what"
   (declare (ignore attacker)
            (ignore attacked))
 
