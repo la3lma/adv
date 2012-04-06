@@ -11,7 +11,7 @@
 ;; file:///Users/rmz2/quicklisp/dists/quicklisp/software/lisp-unit-20120107-git/documentation/lisp-unit.html#overview
 
 ;;
-;; The actual game objects. For testing, not playing (obviously)
+;; The actual game objects. For testing, not playing (ogbviously)
 ;; This should be put into the regression test stuff, not in the
 ;; game itself.
 ;;
@@ -101,7 +101,7 @@
         (format *standard-output* "~%    The output are expecting is  ~s" expected-output)
         (format *standard-output* "~%    The output we got was ~s" the-output))
       
-      (assert-true (system::search-string-equal expected-output the-output))
+      (assert-true (search expected-output the-output))
       the-output)))
 
 (define-test test-quit-emptyness
