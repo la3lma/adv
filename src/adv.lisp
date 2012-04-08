@@ -212,6 +212,7 @@
    (if (is-dead-p player)
        (format (out-stream player) "~% You are dead"))
    (format (out-stream player) "~% Adv>")
+   (finish-output (out-stream player))
    (parse-wordlist (split-string-to-words (read-command-from-user :input input))
                    player))
   (move-all-monsters (world  player)))
