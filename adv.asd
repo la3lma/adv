@@ -40,9 +40,8 @@
                 :depends-on (:adv)
                 :serial t
                 :components
-                ((:module "test"
+                ((:module "src" ;; XXX Separate directories would rule here
                           :serial t
-                          :components ((:file "package")
-                                    ;;   (:file "test-utils")
-                                       (:file "regression")
+                          :components (
+                                       (:file "adv-regression")
                                        ))))
