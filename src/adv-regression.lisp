@@ -7,6 +7,8 @@
 
 (in-package :adv-regression)
 
+(require 'adv) ;; ???
+
 ;; Documentation can be found her
 ;; file:///Users/rmz2/quicklisp/dists/quicklisp/software/lisp-unit-20120107-git/documentation/lisp-unit.html#overview
 
