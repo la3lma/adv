@@ -4,7 +4,8 @@
 (asdf:operate 'asdf:load-op :lisp-unit)
 
 (defpackage :adv-regression
-  (:use :common-lisp :lisp-unit :adv))
+  (:use :common-lisp :lisp-unit :adv)
+  (:export :run-command-oneliner))
 
 (in-package :adv-regression)
 
@@ -41,79 +42,4 @@
       
       (assert-true (search expected-output the-output))
       the-output)))
-
-;;
-;;  THE FIXTURE
-;;
-
-(defun initialize-fixture (&key (input *standard-input*) (output *standard-output*))
-  "Set up a gameworld, and return that gameworld as the result"
-  (let* ((current-world   (make-instance 'adv::GameWorld :description "The game we play"))
-	(initial-location (make-instance 'adv::Location :description "The start"))
-	(goal-location    (make-instance 'adv::Location :description "The goal"))
-	(initial-item     (make-instance 'adv::Item     :description "An item"))
-	(current-player   (make-instance 'adv::Player
-					 :description "The player"
-					 :in-stream input
-					 :out-stream output
-					 :location initial-location))
-	(first-monster    (make-instance 'adv::Monster
-					 :health       30
-					 :in-stream input
-					 :out-stream output
-					 :description "Green little qutie monster"))
-	
-	(sword   (make-instance 'adv::Weapon :description "The sword of generic strikes"))
-	(hammer  (make-instance 'adv::Weapon :description "The hammer of serious blows"))
-	(feather (make-instance 'adv::Weapon :description "The feather of fiendish ticles" :strength 0.1)))
-    
-    (adv::move-object sword         nil initial-location)
-    (adv::move-object initial-item  nil initial-location)
-    (adv::move-object first-monster nil initial-location)
-    
-    ;; Give the monster a hammer and a feather
-    (adv::move-object feather nil first-monster)
-    (adv::move-object hammer  nil first-monster)
-    
-    (adv::set-navigation initial-location goal-location    adv::*north*)
-    (adv::set-navigation goal-location    initial-location adv::*south*)
-
-    (adv::add-all-to-inventory
-     current-world
-     (list
-      current-player
-      first-monster
-      sword
-      hammer
-      feather
-      initial-location
-      goal-location
-      ))   
-    current-world))
-  
-;;
-;;  THE TESTS
-;;
-
-(defun rco (input expected)
-  (run-command-oneliner #'initialize-fixture input expected))
-
-(define-test test-quit-emptyness
-  (rco "" ""))
-
-(define-test test-quit-cmd
-  (rco  "quit" "Ttfn"))
-
-(define-test test-look-for-sword
-  (rco  "look" "sword of generic strikes"))
-
-(define-test test-look-for-the-start
-  (rco "look" "The start"))
-
-(define-test test-take-sword
-  (rco "take sword" "Got it"))
-
-(define-test test-take-sword-then-strike-monster
-  (rco "take sword
-kill monster" "You are dead"))
 
