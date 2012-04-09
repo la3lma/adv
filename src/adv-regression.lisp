@@ -1,5 +1,6 @@
 ;; -*-LISP-*-
 
+;; This is a hack, the ordinary require etc. should be used instead, but how?
 (asdf:operate 'asdf:load-op :lisp-unit)
 
 (defpackage :adv-regression
@@ -9,15 +10,15 @@
 
 (require 'adv) ;; ???
 
-(defun run-testgame ()
-  "Run a test game interactively"
-  (let* ((my-world     (initialize-fixture))
-	 (player       (adv:find-player "player" my-world)))
-    (game-repl player)))
-
-;; Documentation can be found her
+;; Documentation can be found here
 ;; file:///Users/rmz2/quicklisp/dists/quicklisp/software/lisp-unit-20120107-git/documentation/lisp-unit.html#overview
 
+
+(defun run-testgame (initializer)
+  "Run a test game interactively"
+  (let* ((my-world     (funcall initializer))
+	 (player       (adv:find-player "player" my-world)))
+    (game-repl player)))
 
 (defun run-command-oneliner (initializer inputstring expected-output &key (tracep nil))
   "Run a sequence of game commands encoded in the inputstream and return the output from the game as a string"
@@ -41,6 +42,9 @@
       (assert-true (search expected-output the-output))
       the-output)))
 
+;;
+;;  THE FIXTURE
+;;
 
 (defun initialize-fixture (&key (input *standard-input*) (output *standard-output*))
   "Set up a gameworld, and return that gameworld as the result"
@@ -87,7 +91,9 @@
       ))   
     current-world))
   
-
+;;
+;;  THE TESTS
+;;
 
 (defun rco (input expected)
   (run-command-oneliner #'initialize-fixture input expected))
