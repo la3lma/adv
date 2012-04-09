@@ -15,6 +15,9 @@
 	 (player       (adv:find-player "player" my-world)))
     (game-repl player)))
 
+;; Documentation can be found her
+;; file:///Users/rmz2/quicklisp/dists/quicklisp/software/lisp-unit-20120107-git/documentation/lisp-unit.html#overview
+
 
 (defun run-command-oneliner (initializer inputstring expected-output &key (tracep nil))
   "Run a sequence of game commands encoded in the inputstream and return the output from the game as a string"
@@ -85,26 +88,26 @@
     current-world))
   
 
-;; Documentation can be found her
-;; file:///Users/rmz2/quicklisp/dists/quicklisp/software/lisp-unit-20120107-git/documentation/lisp-unit.html#overview
 
+(defun rco (input expected)
+  (run-command-oneliner #'initialize-fixture input expected))
 
 (define-test test-quit-emptyness
-  (run-command-oneliner #'initialize-fixture "" ""))
+  (rco "" ""))
 
 (define-test test-quit-cmd
-  (run-command-oneliner  #'initialize-fixture  "quit" "Ttfn"))
+  (rco  "quit" "Ttfn"))
 
 (define-test test-look-for-sword
-  (run-command-oneliner  #'initialize-fixture  "look" "sword of generic strikes"))
+  (rco  "look" "sword of generic strikes"))
 
 (define-test test-look-for-the-start
-  (run-command-oneliner  #'initialize-fixture  "look" "The start"))
+  (rco "look" "The start"))
 
 (define-test test-take-sword
-  (run-command-oneliner  #'initialize-fixture  "take sword" "Got it"))
+  (rco "take sword" "Got it"))
 
 (define-test test-take-sword-then-strike-monster
-  (run-command-oneliner  #'initialize-fixture  "take sword
+  (rco "take sword
 kill monster" "You are dead"))
 
