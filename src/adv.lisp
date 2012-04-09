@@ -22,7 +22,7 @@
 
 (defpackage :adv
   (:use :common-lisp)
-  (:export :inner-game-repl :game-repl))
+  (:export :inner-game-repl :game-repl :find-player))
   
 (in-package :adv)
 
@@ -373,6 +373,13 @@ if there were an empty string between them."
 (defun find-players (container)
   (find-objects-with-typename container 'Player))
 
+(defun find-player (playerid gameworld)
+  (let ((players (identify (list playerid) (find-players gameworld))))
+    (cond ((= (length players) 1) (car players))
+	  ((null players) 
+	   nil)
+	  (t (error "player is not unique")))))
+
 (defun pick-best-weapon (attacker attacked)
   "Today's simple heuristic is simply to get the strongest weapon available no matter what"
   (declare (ignore attacker)
@@ -538,3 +545,4 @@ if no weapon can be found, nil is returned"
   (setf (navigation origin)
         (union (navigation origin)
                (list (make-instance 'navigation :names names :destination  destination)))))
+
