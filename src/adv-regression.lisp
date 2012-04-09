@@ -18,13 +18,7 @@
 ;; game itself.
 ;;
 
-(defvar *current-world*    nil)
-(defvar *initial-location* nil)
-(defvar *goal-location*    nil)
-(defvar *initial-item*     nil)
 (defvar *current-player*   nil)
-(defvar *first-monster*    nil)
-(defvar *sword*            nil)
 
 ;;
 ;; The actual game objects. For testing, not playing (obviously)
@@ -33,51 +27,54 @@
 ;;
 
 (defun initialize-fixture (&key (input *standard-input*) (output *standard-output*))
-  
-  (setf *current-world*  (make-instance 'adv::GameWorld :description "The game we play"))
-  
-  (setf *initial-location* (make-instance 'adv::Location :description "The start"))
-  (setf *goal-location*    (make-instance 'adv::Location :description "The goal"))
-  (setf *initial-item*     (make-instance 'adv::Item     :description "An item"))
-  (setf *current-player*   (make-instance 'adv::Player
-                                          :description "The player"
-                                          :in-stream input
-                                          :out-stream output
-                                                  :location *initial-location*))
-  (setf *first-monster*    (make-instance 'adv::Monster
-                                          :health       30
-                                          :in-stream input
-                                          :out-stream output
-                                          :description "Green little qutie monster"))
-  
-  (setf *sword*   (make-instance 'adv::Weapon :description "The sword of generic strikes"))
-  (setf *hammer*  (make-instance 'adv::Weapon :description "The hammer of serious blows"))
-  (setf *feather* (make-instance 'adv::Weapon :description "The feather of fiendish ticles" :strength 0.1))
-  
-  (adv::move-object *sword*         nil *initial-location*)
-  (adv::move-object *initial-item*  nil *initial-location*)
-  (adv::move-object *first-monster* nil *initial-location*)
+  "Set up a gameworld, and return that gameworld as the result"
+  (let* ((current-world   (make-instance 'adv::GameWorld :description "The game we play"))
+	(initial-location (make-instance 'adv::Location :description "The start"))
+	(goal-location    (make-instance 'adv::Location :description "The goal"))
+	(initial-item     (make-instance 'adv::Item     :description "An item"))
+	(current-player   (make-instance 'adv::Player
+					 :description "The player"
+					 :in-stream input
+					 :out-stream output
+					 :location initial-location))
+	(first-monster    (make-instance 'adv::Monster
+					 :health       30
+					 :in-stream input
+					 :out-stream output
+					 :description "Green little qutie monster"))
+	
+	(sword   (make-instance 'adv::Weapon :description "The sword of generic strikes"))
+	(hammer  (make-instance 'adv::Weapon :description "The hammer of serious blows"))
+	(feather (make-instance 'adv::Weapon :description "The feather of fiendish ticles" :strength 0.1)))
+    
+    (adv::move-object sword         nil initial-location)
+    (adv::move-object initial-item  nil initial-location)
+    (adv::move-object first-monster nil initial-location)
+    
+    ;; Give the monster a hammer and a feather
+    (adv::move-object feather nil first-monster)
+    (adv::move-object hammer  nil first-monster)
+    
+    (adv::set-navigation initial-location goal-location    adv::*north*)
+    (adv::set-navigation goal-location    initial-location adv::*south*)
+    
+    (setf *current-player* current-player)
 
-  ;; Give the monster a hammer and a feather
-  (adv::move-object *feather* nil *first-monster*)
-  (adv::move-object *hammer*  nil *first-monster*)
+    (adv::add-all-to-inventory
+     current-world
+     (list
+      current-player
+      first-monster
+      sword
+      hammer
+      feather
+      initial-location
+      goal-location
+      ))   
+
+    current-world))
   
-  (adv::set-navigation *initial-location* *goal-location*    adv::*north*)
-  (adv::set-navigation *goal-location*    *initial-location* adv::*south*)
-
-  (adv::add-all-to-inventory
-   *current-world*
-   (list
-    *current-player*
-    *first-monster*
-    *sword*
-    *hammer*
-    *feather*
-    *initial-location*
-    *goal-location*
-    )))
-
-
+  
 (defun run-testgame ()
   "Run a test game interactively"
   (initialize-fixture)
@@ -113,7 +110,7 @@
   (run-command-oneliner "quit" "Ttfn"))
 
 (define-test test-look-for-sword
-  (run-command-oneliner "look" "Sword of generic strikes"))
+  (run-command-oneliner "look" "sword of generic strikes" :tracep t))
 
 (define-test test-look-for-the-start
   (run-command-oneliner "look" "The start"))
