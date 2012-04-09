@@ -13,11 +13,6 @@
 ;; file:///Users/rmz2/quicklisp/dists/quicklisp/software/lisp-unit-20120107-git/documentation/lisp-unit.html#overview
 
 
-;;
-;; The actual game objects. For testing, not playing (obviously)
-;; This should be put into the regression test stuff, not in the
-;; game itself.
-;;
 
 (defun initialize-fixture (&key (input *standard-input*) (output *standard-output*))
   "Set up a gameworld, and return that gameworld as the result"
@@ -50,7 +45,6 @@
     
     (adv::set-navigation initial-location goal-location    adv::*north*)
     (adv::set-navigation goal-location    initial-location adv::*south*)
-    
 
     (adv::add-all-to-inventory
      current-world
