@@ -30,8 +30,7 @@
    (:static-file "COPYING")))
 
 
-
-(asdf:defsystem advtest
+(asdf:defsystem adv-regression
                 :name "adv test"
                 :author "Bjørn Remseth; la3lma@gmail.com"
                 :version "0.1"
@@ -45,3 +44,5 @@
                           :components (
                                        (:file "adv-regression")
                                        ))))
+
+
