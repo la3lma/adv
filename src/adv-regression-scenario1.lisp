@@ -13,6 +13,7 @@
 ;;
 
 
+
 ;; XXX This is a work in progress.   When done, it will make the 
 ;;      world
 (defmacro defworld (gameworld-description &body defworld-body)
@@ -21,23 +22,21 @@
     `(let ((,world-var (make-instance 'adv::GameWorld :description "The game we play")))
        (labels ((current-world () 
 			       ,world-var)
-		(inventorize-item (item)
-				  ;; XXX Without this format statement, the unit tests
-				  ;;     fail.  The format should be a noop, so why isn't it?
-				  (format  nil "~% Adding to inventory ~s" item)'
-				  (adv:add-to-inventory ,world-var item)
+		(internalize-item (item)
+				  (adv:add-to-inventory item ,world-var)
 				  item)
 		(create-internalized-item (class description params)
-			(inventorize-item (apply #'make-instance (cons class (cons :description (cons description  params)))))))
-	 (flet ((location (description &rest location-body)
+		  (internalize-item (apply #'make-instance (cons class (cons :description (cons description  params)))))))
+	 ;; XXX  This flet could be made much simpler!
+	 (flet ((new-location (description &rest location-body)
 			(create-internalized-item 'adv::Location description location-body))
-		(item (description &rest description-body)
+		(new-item (description &rest description-body)
 			(create-internalized-item 'adv::Item description description-body))
-		(player (description &rest player-body)
+		(new-player (description &rest player-body)
 			(create-internalized-item 'adv::Player description player-body))
-		(monster (description &rest monster-body)
+		(new-monster (description &rest monster-body)
 			(create-internalized-item 'adv::Monster description monster-body))
-		(weapon (description &rest weapon-body)
+		(new-weapon (description &rest weapon-body)
 			(create-internalized-item 'adv::Weapon description weapon-body)))
 		  ,@defworld-body)))))
 
@@ -47,21 +46,22 @@
   (format *standard-output* "~% Initializing fixture" )
   
   (defworld "The game we play"
-    (let* ((initial-location (location "The start"))
-	   (goal-location    (location "the goal")) 
-	   (initial-item     (item     "An item"))
-	   (current-player   (player   "The player"
+    (let* ((initial-location (new-location "The start"))
+	   (goal-location    (new-location "The goal")) 
+	   (initial-item     (new-item     "An item"))
+	   (current-player   (new-player   "The player"
 					    :in-stream input
 					    :out-stream output
 					    :location initial-location))
-	   (first-monster    (monster "Green little cutie monster"
+	   (first-monster    (new-monster "Green little cutie monster"
 					    :health       30
 					    :in-stream input
 					    :out-stream output
 					))
-	   (sword   (weapon "The sword of generic strikes"))
-	   (hammer  (weapon "The hammer of serious blows"))
-	   (feather (weapon "The feather of fiendish ticles" :strength 0.1)))
+	   
+	   (sword   (new-weapon "The sword of generic strikes"))
+	   (hammer  (new-weapon "The hammer of serious blows"))
+	   (feather (new-weapon "The feather of fiendish ticles" :strength 0.1)))
     
 
     ;; Put items in their various locations
@@ -79,25 +79,8 @@
     (adv::set-navigation initial-location goal-location    adv::*north*)
     (adv::set-navigation goal-location    initial-location adv::*south*)
 
-    ;; Add all the items, players, monsters etc. to
-    ;; the gameworld's inventory
-    (adv::add-all-to-inventory
-     (current-world)
-     (list
-      current-player
-      first-monster
-      sword
-      hammer
-      feather
-      initial-location
-      goal-location
-      )) 
-    (format *standard-output* "~% latest world is ~s" (current-world))
     ;; Finally return the gameworld
-    (current-world))
-)
-
-)
+    (current-world))))
 
   
 ;;
