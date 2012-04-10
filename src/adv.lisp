@@ -22,7 +22,7 @@
 
 (defpackage :adv
   (:use :common-lisp)
-  (:export  :add-to-inventory :inner-game-repl :game-repl :find-player :inventory :move-object))
+  (:export  :add-to-inventory :inner-game-repl :game-repl :find-player :inventory :move-object :reverse-direction :set-navigation))
   
 (in-package :adv)
 
@@ -532,6 +532,19 @@ if no weapon can be found, nil is returned"
 (defparameter *west*  '("west"  "w"))
 (defparameter *up*    '("up"    "u"))
 (defparameter *down*  '("down"  "d"))
+
+(defparameter *condensed-reverse-direction-map* 
+  '((*north* *south*)
+    (*east*  *west*)
+    (*up*    *down*)))
+
+(defparameter *reverse-direction-map* 
+  (append *condensed-reverse-direction-map* (mapcar #'reverse *condensed-reverse-direction-map*)))
+
+
+(defun reverse-direction (direction)
+  (second (assoc direction *reverse-direction-map*)))
+
 
 (defun find-matching-navigations (directionnames location)
   (loop for nav in (navigation location)

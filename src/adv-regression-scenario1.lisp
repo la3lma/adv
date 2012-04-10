@@ -12,6 +12,18 @@
 ;;  THE FIXTURE
 ;;
 
+;; XXX This function is very brittle, it should have more parameter checking,
+;;     and it should be iterative, not tail recursive (although that isn't so
+;;     awful in itself).
+(defun navigation-path (&rest path)
+  (when (>= (length path) 3)
+	 (let  ((source       (first  path))
+		(direction    (second path))
+		(destination  (third  path)))
+	   (adv:set-navigation source destination  direction)
+	   (adv:set-navigation destination source  (adv:reverse-direction direction))
+	   (navigation-path (cddr path)))))
+
 
 
 ;; XXX This is a work in progress.   When done, it will make the 
@@ -67,11 +79,7 @@
 					   )))
 	   (goal-location    (new-location "The goal")) )
     
-
-
-    ;; Add navigation to locations
-    (adv::set-navigation initial-location goal-location    adv::*north*)
-    (adv::set-navigation goal-location    initial-location adv::*south*))))
+      (navigation-path initial-location adv::*north* goal-location))))
 
 
   
