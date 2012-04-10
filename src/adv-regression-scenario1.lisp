@@ -34,7 +34,7 @@
 		(item (description &rest description-body)
 			(create-internalized-item 'adv::Item description description-body))
 		(player (description &rest player-body)
-			(create-internalized-item 'adv::Item description player-body))
+			(create-internalized-item 'adv::Player description player-body))
 		(monster (description &rest monster-body)
 			(create-internalized-item 'adv::Monster description monster-body))
 		(weapon (description &rest weapon-body)
@@ -59,7 +59,6 @@
 					    :in-stream input
 					    :out-stream output
 					))
-	   
 	   (sword   (weapon "The sword of generic strikes"))
 	   (hammer  (weapon "The hammer of serious blows"))
 	   (feather (weapon "The feather of fiendish ticles" :strength 0.1)))
