@@ -54,23 +54,19 @@
     (let* ((initial-location (stash (new-location "The start")
 				    (new-item     "An item")
 				    (new-weapon "The sword of generic strikes")
-				    ))
-	   (goal-location    (new-location "The goal")) 
-	   (current-player   (new-player   "The player"
-					    :in-stream input
-					    :out-stream output
-					    :location initial-location))
-	   (first-monster    (stash (new-monster "Green little cutie monster"
-						 :health       30
-						 :in-stream input
-						 :out-stream output
-						 )
-				    (new-weapon "The hammer of serious blows")
-				    (new-weapon "The feather of fiendish ticles" :strength 0.1)
-				    )))
+				    (new-player   "The player"
+						  :in-stream input
+						  :out-stream output)
+				    (stash (new-monster "Green little cutie monster"
+							:health       30
+							:in-stream input
+							:out-stream output
+							)
+					   (new-weapon "The hammer of serious blows")
+					   (new-weapon "The feather of fiendish ticles" :strength 0.1)
+					   )))
+	   (goal-location    (new-location "The goal")) )
     
-    ;; Put items in their various locations
-     (adv::move-object first-monster nil initial-location)
 
 
     ;; Add navigation to locations
