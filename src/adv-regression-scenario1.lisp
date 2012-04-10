@@ -15,29 +15,37 @@
 
 ;; XXX This is a work in progress.   When done, it will make the 
 ;;      world
-(defmacro defworld (gameworld-description &body body)
+(defmacro defworld (gameworld-description &body defworld-body)
   (let ((world-var (gensym))
 	(tmp (gensym)))
     `(let ((,world-var (make-instance 'adv::GameWorld :description "The game we play")))
        (labels ((current-world () 
 			       ,world-var)
 		(inventorize-item (item)
-		  (adv:add-to-inventory ,world-var item)
-		  item))
-	      (flet ((location (description)
-			       (inventorize-item (make-instance 'adv::Location :description description))))
-		,@body)))))
+				  ;; XXX Without this format statement, the unit tests
+				  ;;     fail.  The format should be a noop, so why isn't it?
+				  (format  nil "~% Adding to inventory ~s" item)'
+				  (adv:add-to-inventory ,world-var item)
+				  item)
+		(create-internalized-item (class description params)
+			(inventorize-item (apply #'make-instance (cons class (cons :description (cons description  params)))))))
+	 (flet ((location (description &rest location-body)
+			(create-internalized-item 'adv::Location description location-body))
+		(item (description &rest description-body)
+			(create-internalized-item 'adv::Item description description-body))
+		(weapon (description &rest weapon-body)
+			(create-internalized-item 'adv::Weapon description weapon-body)))
+		  ,@defworld-body)))))
 
 (defun initialize-fixture (&key (input *standard-input*) (output *standard-output*))
   "Set up a gameworld, and return that gameworld as the result"
   
   (format *standard-output* "~% Initializing fixture" )
-
   
   (defworld "The game we play"
     (let* ((initial-location (location "The start"))
-	   (goal-location    (location "the goal")) ; (make-instance 'adv::Location  :description "The goal"))
-	   (initial-item     (make-instance 'adv::Item      :description "An item"))
+	   (goal-location    (location "the goal")) 
+	   (initial-item     (item     "An item"))
 	   (current-player   (make-instance 'adv::Player
 					    :description "The player"
 					    :in-stream input
@@ -47,21 +55,24 @@
 					    :health       30
 					    :in-stream input
 					    :out-stream output
-					    :description "Green little qutie monster"))
+					    :description "Green little cutie monster"))
 	   
-	   (sword   (make-instance 'adv::Weapon :description "The sword of generic strikes"))
-	   (hammer  (make-instance 'adv::Weapon :description "The hammer of serious blows"))
-	 (feather (make-instance 'adv::Weapon :description "The feather of fiendish ticles" :strength 0.1)))
+	   (sword   (weapon "The sword of generic strikes"))
+	   (hammer  (weapon "The hammer of serious blows"))
+	   (feather (weapon "The feather of fiendish ticles" :strength 0.1)))
     
+
     ;; Put items in their various locations
     (adv::move-object sword         nil initial-location)
     (adv::move-object initial-item  nil initial-location)
     (adv::move-object first-monster nil initial-location)
-    
+
+
     ;; Give the monster a hammer and a feather
     (adv::move-object feather nil first-monster)
     (adv::move-object hammer  nil first-monster)
     
+
     ;; Add navigation to locations
     (adv::set-navigation initial-location goal-location    adv::*north*)
     (adv::set-navigation goal-location    initial-location adv::*south*)
