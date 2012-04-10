@@ -22,7 +22,7 @@
 
 (defpackage :adv
   (:use :common-lisp)
-  (:export :inner-game-repl :game-repl :find-player))
+  (:export  :add-to-inventory :inner-game-repl :game-repl :find-player))
   
 (in-package :adv)
 
