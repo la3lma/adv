@@ -37,7 +37,11 @@
 		(new-monster (description &rest monster-body)
 			(create-internalized-item 'adv::Monster description monster-body))
 		(new-weapon (description &rest weapon-body)
-			(create-internalized-item 'adv::Weapon description weapon-body)))
+			(create-internalized-item 'adv::Weapon description weapon-body))
+		(stash (recipient &rest items)
+		       (dolist (item items)
+			 (adv:move-object item nil  recipient))
+		       recipient))
 		  ,@defworld-body)))))
 
 (defun initialize-fixture (&key (input *standard-input*) (output *standard-output*))
@@ -46,34 +50,27 @@
   (format *standard-output* "~% Initializing fixture" )
   
   (defworld "The game we play"
-    (let* ((initial-location (new-location "The start"))
+    (let* ((initial-location (stash (new-location "The start")
+				    (new-item     "An item")
+				    (new-weapon "The sword of generic strikes")
+				    ))
 	   (goal-location    (new-location "The goal")) 
-	   (initial-item     (new-item     "An item"))
 	   (current-player   (new-player   "The player"
 					    :in-stream input
 					    :out-stream output
 					    :location initial-location))
-	   (first-monster    (new-monster "Green little cutie monster"
-					    :health       30
-					    :in-stream input
-					    :out-stream output
-					))
-	   
-	   (sword   (new-weapon "The sword of generic strikes"))
-	   (hammer  (new-weapon "The hammer of serious blows"))
-	   (feather (new-weapon "The feather of fiendish ticles" :strength 0.1)))
+	   (first-monster    (stash (new-monster "Green little cutie monster"
+						 :health       30
+						 :in-stream input
+						 :out-stream output
+						 )
+				    (new-weapon "The hammer of serious blows")
+				    (new-weapon "The feather of fiendish ticles" :strength 0.1)
+				    )))
     
-
     ;; Put items in their various locations
-    (adv::move-object sword         nil initial-location)
-    (adv::move-object initial-item  nil initial-location)
-    (adv::move-object first-monster nil initial-location)
+     (adv::move-object first-monster nil initial-location)
 
-
-    ;; Give the monster a hammer and a feather
-    (adv::move-object feather nil first-monster)
-    (adv::move-object hammer  nil first-monster)
-    
 
     ;; Add navigation to locations
     (adv::set-navigation initial-location goal-location    adv::*north*)
