@@ -22,7 +22,9 @@
 
 (defpackage :adv
   (:use :common-lisp)
-  (:export  :add-to-inventory :inner-game-repl :game-repl :find-player :inventory :move-object :reverse-direction :set-navigation))
+  (:export  :add-to-inventory :inner-game-repl :game-repl 
+	    :find-player :inventory :move-object :reverse-direction 
+	    :set-navigation  :defworld :navigation-path :stash :new-weapon :new-item :new-monster :new-location :new-player))
   
 (in-package :adv)
 
@@ -560,3 +562,48 @@ if no weapon can be found, nil is returned"
         (union (navigation origin)
                (list (make-instance 'navigation :names names :destination  destination)))))
 
+
+;; XXX This function is very brittle, it should have more parameter checking,
+;;     and it should be iterative, not tail recursive (although that isn't so
+;;     awful in itself).
+(defun navigation-path (&rest path)
+  (when (>= (length path) 3)
+	 (let  ((source       (first  path))
+		(direction    (second path))
+		(destination  (third  path)))
+	   (adv:set-navigation source destination  direction)
+	   (adv:set-navigation destination source  (adv:reverse-direction direction))
+	   (navigation-path (cddr path)))))
+
+
+
+;; XXX This is a work in progress.   When done, it will make the 
+;;      world
+(defmacro defworld (gameworld-description &body defworld-body)
+  (let ((world-var (gensym))
+	(tmp (gensym)))
+    `(let ((,world-var (make-instance 'adv::GameWorld :description "The game we play")))
+       (labels ((current-world () 
+			       ,world-var)
+		(internalize-item (item)
+				  (adv:add-to-inventory item ,world-var)
+				  item)
+		(create-internalized-item (class description params)
+		  (internalize-item (apply #'make-instance (cons class (cons :description (cons description  params)))))))
+	 ;; XXX  This flet could be made much simpler!
+	 (flet ((new-location (description &rest location-body)
+			(create-internalized-item 'adv::Location description location-body))
+		(new-item (description &rest description-body)
+			(create-internalized-item 'adv::Item description description-body))
+		(new-player (description &rest player-body)
+			(create-internalized-item 'adv::Player description player-body))
+		(new-monster (description &rest monster-body)
+			(create-internalized-item 'adv::Monster description monster-body))
+		(new-weapon (description &rest weapon-body)
+			(create-internalized-item 'adv::Weapon description weapon-body))
+		(stash (recipient &rest items)
+		       (dolist (item items)
+			 (adv:move-object item nil  recipient))
+		       recipient))
+		  ,@defworld-body)
+	 (current-world)))))
