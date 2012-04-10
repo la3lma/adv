@@ -33,6 +33,10 @@
 			(create-internalized-item 'adv::Location description location-body))
 		(item (description &rest description-body)
 			(create-internalized-item 'adv::Item description description-body))
+		(player (description &rest player-body)
+			(create-internalized-item 'adv::Item description player-body))
+		(monster (description &rest monster-body)
+			(create-internalized-item 'adv::Monster description monster-body))
 		(weapon (description &rest weapon-body)
 			(create-internalized-item 'adv::Weapon description weapon-body)))
 		  ,@defworld-body)))))
@@ -46,16 +50,15 @@
     (let* ((initial-location (location "The start"))
 	   (goal-location    (location "the goal")) 
 	   (initial-item     (item     "An item"))
-	   (current-player   (make-instance 'adv::Player
-					    :description "The player"
+	   (current-player   (player   "The player"
 					    :in-stream input
 					    :out-stream output
 					    :location initial-location))
-	   (first-monster    (make-instance 'adv::Monster
+	   (first-monster    (monster "Green little cutie monster"
 					    :health       30
 					    :in-stream input
 					    :out-stream output
-					    :description "Green little cutie monster"))
+					))
 	   
 	   (sword   (weapon "The sword of generic strikes"))
 	   (hammer  (weapon "The hammer of serious blows"))
