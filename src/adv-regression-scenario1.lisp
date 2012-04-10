@@ -12,26 +12,44 @@
 ;;  THE FIXTURE
 ;;
 
+
+(defmacro defworld (gameworld-description &body body)
+  (let ((world-var (gensym))
+	(tmp (gensym)))
+    `(let ((,world-var (make-instance 'adv::GameWorld :description "The game we play")))
+
+       (flet ((inventorize-item (item)
+		  (adv:add-to-inventory ,world-var item)
+		  item))
+	      (flet ((location (description)
+			       (inventorize-item (make-instance 'adv::Location :description description))))
+		,@body)))))
+
 (defun initialize-fixture (&key (input *standard-input*) (output *standard-output*))
   "Set up a gameworld, and return that gameworld as the result"
-  (let* ((current-world   (make-instance 'adv::GameWorld :description "The game we play"))
-	(initial-location (make-instance 'adv::Location :description "The start"))
-	(goal-location    (make-instance 'adv::Location :description "The goal"))
-	(initial-item     (make-instance 'adv::Item     :description "An item"))
-	(current-player   (make-instance 'adv::Player
-					 :description "The player"
-					 :in-stream input
-					 :out-stream output
-					 :location initial-location))
-	(first-monster    (make-instance 'adv::Monster
-					 :health       30
-					 :in-stream input
-					 :out-stream output
-					 :description "Green little qutie monster"))
-	
-	(sword   (make-instance 'adv::Weapon :description "The sword of generic strikes"))
-	(hammer  (make-instance 'adv::Weapon :description "The hammer of serious blows"))
-	(feather (make-instance 'adv::Weapon :description "The feather of fiendish ticles" :strength 0.1)))
+  
+  (format *standard-output* "~% Initializing fixture" )
+
+  
+  (defworld "The game we play"
+    (let* ((current-world    (make-instance 'adv::GameWorld :description "The game we play"))
+	   (initial-location (make-instance 'adv::Location  :description "The start"))
+	   (goal-location    (location "the goal")) ; (make-instance 'adv::Location  :description "The goal"))
+	 (initial-item     (make-instance 'adv::Item      :description "An item"))
+	 (current-player   (make-instance 'adv::Player
+					  :description "The player"
+					  :in-stream input
+					  :out-stream output
+					  :location initial-location))
+	 (first-monster    (make-instance 'adv::Monster
+					  :health       30
+					  :in-stream input
+					  :out-stream output
+					  :description "Green little qutie monster"))
+	 
+	 (sword   (make-instance 'adv::Weapon :description "The sword of generic strikes"))
+	 (hammer  (make-instance 'adv::Weapon :description "The hammer of serious blows"))
+	 (feather (make-instance 'adv::Weapon :description "The feather of fiendish ticles" :strength 0.1)))
     
     ;; Put items in their various locations
     (adv::move-object sword         nil initial-location)
@@ -59,9 +77,13 @@
       initial-location
       goal-location
       )) 
-
+    (format *standard-output* "~% latest world is ~s" current-world)
     ;; Finally return the gameworld
-    current-world))
+    current-world)
+)
+
+)
+
   
 ;;
 ;;  THE TESTS
