@@ -42,7 +42,8 @@
 		       (dolist (item items)
 			 (adv:move-object item nil  recipient))
 		       recipient))
-		  ,@defworld-body)))))
+		  ,@defworld-body)
+	 (current-world)))))
 
 (defun initialize-fixture (&key (input *standard-input*) (output *standard-output*))
   "Set up a gameworld, and return that gameworld as the result"
@@ -74,10 +75,8 @@
 
     ;; Add navigation to locations
     (adv::set-navigation initial-location goal-location    adv::*north*)
-    (adv::set-navigation goal-location    initial-location adv::*south*)
+    (adv::set-navigation goal-location    initial-location adv::*south*))))
 
-    ;; Finally return the gameworld
-    (current-world))))
 
   
 ;;
