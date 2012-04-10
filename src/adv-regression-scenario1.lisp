@@ -19,8 +19,8 @@
   
   (adv:defworld "The game we play"
     (let* ((initial-location 
-	    (adv:stash (new-location "The start")
-		       (adv:new-item     "An item")
+	    (adv:stash (new-location  "The start")
+		       (adv:new-item   "An item")
 		       (adv:new-weapon "The sword of generic strikes")
 		       (adv:new-player   "The player"
 					 :in-stream input
