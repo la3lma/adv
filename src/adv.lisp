@@ -308,7 +308,8 @@ if there were an empty string between them."
   (setf (inventory destination)
         (union obs (inventory destination)))
   (dolist (ob obs)
-    (add-backpointer ob destination)))
+    (add-backpointer ob destination))
+  (inventory destination))
 
 
 (defun remove-from-inventory (ob source)
