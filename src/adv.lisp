@@ -446,7 +446,6 @@ if no weapon can be found, nil is returned"
                      (wpn (if (null weapon) p   (car weapon))))
                  (attack p  tgt  wpn)
                  (counterattack tgt p)))))
-
   
   (:method ((c InventoryCmd) (p Player) (l List))
            (describe-for-user (out-stream p) p))

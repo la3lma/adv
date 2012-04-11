@@ -17,25 +17,25 @@
   
   (format *standard-output* "~% Initializing fixture" )
   
-  (adv:defworld "The game we play"
+  (defworld "The game we play"
     (let* ((initial-location 
 	    (adv:stash (new-location  "The start")
-		       (adv:new-item   "An item")
+		       (new-item   "An item")
 		       (new-readable "Ancient looking dusty scroll"
 				     :content "Fooxxxy")
-		       (adv:new-weapon "The sword of generic strikes")
-		       (adv:new-player   "The player"
+		       (new-weapon "The sword of generic strikes")
+		       (new-player   "The player"
 					 :in-stream input
 					 :out-stream output)
-		       (adv:stash (adv:new-monster "Green little cutie monster"
+		       (stash (adv:new-monster "Green little cutie monster"
 						   :health       30
 						   :in-stream input
 						   :out-stream output
 						   )
-				  (adv:new-weapon "The hammer of serious blows")
-				  (adv:new-weapon "The feather of fiendish ticles" :strength 0.1)
+				  (new-weapon "The hammer of serious blows")
+				  (new-weapon "The feather of fiendish ticles" :strength 0.1)
 				  )))
-	   (goal-location    (adv:new-location "The goal")) )
+	   (goal-location    (new-location "The goal")) )
       
       (navigation-path initial-location adv::*north* goal-location))))
   
