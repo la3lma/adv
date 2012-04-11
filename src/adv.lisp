@@ -125,9 +125,9 @@
 
 (defgeneric extract-damage-points (weapon)
   (:method ((w Weapon))
-           (strength w)
-           ; (* (random 1) (strength w))
-           )
+	   (if (<= (random 1) (reliability weapon))
+	       (strength w)
+	     0))
 
   (:method ((f Fighter))
            (* (strength f) (health f))

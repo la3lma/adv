@@ -19,23 +19,29 @@
   
   (defworld "The game we play"
     (let* ((initial-location 
-	    (adv:stash (new-location  "The start")
-		       (new-item   "An item")
-		       (new-readable "Ancient looking dusty scroll"
-				     :content "Fooxxxy")
-		       (new-weapon "The sword of generic strikes")
-		       (new-player   "The player"
-					 :in-stream input
-					 :out-stream output)
-		       (stash (adv:new-monster "Green little cutie monster"
-						   :health       30
-						   :in-stream input
-						   :out-stream output
-						   )
-				  (new-weapon "The hammer of serious blows")
-				  (new-weapon "The feather of fiendish ticles" :strength 0.1)
-				  )))
-	   (goal-location    (new-location "The goal")) )
+	    (stash (new-location  "The start")
+		   (new-item   "An item")
+		   (new-readable "Ancient looking dusty scroll"
+				 :content "Fooxxxy")
+		   (new-weapon "The sword of generic strikes")
+		   (new-player   "The player"
+				 :in-stream input
+				 :out-stream output)
+		   (stash (new-monster "Green little cutie monster"
+				       :health       30
+				       :in-stream input
+				       :out-stream output
+				       )
+			  (new-weapon "The hammer of serious blows")
+			  (new-weapon "The feather of fiendish ticles" :strength 0.1)
+			  )))
+	   (goal-location    (stash (new-location "The goal")
+				    (stash 
+				     (new-monster "Norbert the Norwegian ridgeback")
+				     (new-weapon "A tail with fierce looking horns"
+						 :strength    50
+						 :reliability 0.2)
+				     ))))
       
       (navigation-path initial-location adv::*north* goal-location))))
   
