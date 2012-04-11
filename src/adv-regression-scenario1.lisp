@@ -21,6 +21,8 @@
     (let* ((initial-location 
 	    (adv:stash (new-location  "The start")
 		       (adv:new-item   "An item")
+		       (new-readable "Ancient looking dusty scroll"
+				     :content "Fooxxxy")
 		       (adv:new-weapon "The sword of generic strikes")
 		       (adv:new-player   "The player"
 					 :in-stream input
@@ -62,4 +64,8 @@
 (define-test test-take-sword-then-strike-monster
   (rco "take sword
 kill monster" "You are dead"))
+
+(define-test test-take-scroll-then-read-it
+  (rco "take scroll
+read scroll" "Fooxxxy"))
 

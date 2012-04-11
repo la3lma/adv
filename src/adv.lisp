@@ -24,7 +24,7 @@
   (:use :common-lisp)
   (:export  :add-to-inventory :inner-game-repl :game-repl 
 	    :find-player :inventory :move-object :reverse-direction 
-	    :set-navigation  :defworld :navigation-path :stash :new-weapon :new-item :new-monster :new-location :new-player))
+	    :set-navigation  :defworld :navigation-path :stash :new-weapon :new-item :new-monster :new-location :new-player :new-readable))
   
 (in-package :adv)
 
@@ -97,6 +97,14 @@
                  (format (out-stream p) "Don't know how to go ~{~s~^ ~}" l)))))
 
 
+;;;
+;;; Informational items
+;;;
+
+(defclass Readable (Item)
+  ((content     :accessor content     :initarg :content))
+  (:documentation "Something that can be read by players/monsters"))
+  
 
 ;;;
 ;;;  A BATTLE SYSTEM
@@ -283,6 +291,7 @@ if there were an empty string between them."
 (defclass QuitCmd      (Command) ())
 (defclass TakeCmd      (Command) ())
 (defclass DropCmd      (Command) ())
+(defclass ReadCmd      (Command) ())
 
 (defgeneric command-available-for-player-p (command player)
   (:documentation "Return t if the command is available to the user, nil otherwise")
@@ -376,6 +385,10 @@ if there were an empty string between them."
 (defun find-players (container)
   (find-objects-with-typename container 'Player))
 
+(defun find-readables (container)
+  (find-objects-with-typename container 'Readable))
+
+
 (defun find-player (playerid gameworld)
   (let ((players (identify (list playerid) (find-players gameworld))))
     (cond ((= (length players) 1) (car players))
@@ -437,6 +450,16 @@ if no weapon can be found, nil is returned"
   
   (:method ((c InventoryCmd) (p Player) (l List))
            (describe-for-user (out-stream p) p))
+
+  (:method ((c ReadCmd) (p Player) (l List))
+	   (let ((items (identify l (find-readables p))))
+
+	     (cond ((null items)
+		    (format (out-stream p) "~% Couldn't find anything like that"))
+		   ((= 1 (length items))
+		    (format (out-stream p) "~% You read: ~A." (content (first items))))
+		   (t 
+		    (format (out-stream p) "~% Hmmm, that isn't specific enough")))))
   
   (:method ((c LookCmd) (p Player) (l List))
            (describe-for-user  (out-stream p) (location p)))
@@ -464,6 +487,7 @@ if no weapon can be found, nil is returned"
    (make-instance 'FightCmd     :names '("fight" "kill" "strike" "slash" "slab" "attack" "stab" "maim" "hit"))
    (make-instance 'TakeCmd      :names '("take" "grab" "pick"))
    (make-instance 'DropCmd      :names '("drop" "leave" "stash"))
+   (make-instance 'ReadCmd      :names '("read"))
    (make-instance 'HelpCmd      :names '("?" "help" "what"))
    (make-instance 'QuitCmd      :names '("quit" "bye" "q"))))
 
@@ -599,6 +623,8 @@ if no weapon can be found, nil is returned"
 			(create-internalized-item 'adv::Player description player-body))
 		(new-monster (description &rest monster-body)
 			(create-internalized-item 'adv::Monster description monster-body))
+		(new-readable (description &rest readable-body)
+			(create-internalized-item 'adv::Readable description readable-body))
 		(new-weapon (description &rest weapon-body)
 			(create-internalized-item 'adv::Weapon description weapon-body))
 		(stash (recipient &rest items)
