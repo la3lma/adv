@@ -559,16 +559,18 @@ if no weapon can be found, nil is returned"
 (defparameter *down*  '("down"  "d"))
 
 (defparameter *condensed-reverse-direction-map* 
-  '((*north* *south*)
-    (*east*  *west*)
-    (*up*    *down*)))
+  `((,*north* ,*south*)
+    (,*east*  ,*west*)
+    (,*up*    ,*down*)))
 
 (defparameter *reverse-direction-map* 
   (append *condensed-reverse-direction-map* (mapcar #'reverse *condensed-reverse-direction-map*)))
 
 
 (defun reverse-direction (direction)
-  (second (assoc direction *reverse-direction-map*)))
+  (second (find direction 
+		   *reverse-direction-map*
+		   :key #'first)))
 
 
 (defun find-matching-navigations (directionnames location)
@@ -586,16 +588,28 @@ if no weapon can be found, nil is returned"
                (list (make-instance 'navigation :names names :destination  destination)))))
 
 
+
 ;; XXX This function is very brittle, it should have more parameter checking,
 ;;     and it should be iterative, not tail recursive (although that isn't so
 ;;     awful in itself).
 (defun navigation-path (&rest path)
   (when (>= (length path) 3)
-	 (let  ((source       (first  path))
-		(direction    (second path))
-		(destination  (third  path)))
+	 (let*  ((source       (first  path))
+		 (direction    (second path))
+		 (destination  (third  path))
+		 (reverse-dir  (reverse-direction direction)))
+
+	   (if (null source)
+	       (error "Source can't be null"))
+	   (if (null destination)
+	       (error "Destination can't be null, direction was ~S" direction))
+	   (if (null direction)
+	       (error "Direction can't be null"))
+	   (if (null reverse-dir)
+	       (error "Reverse direction can't be null"))
+
 	   (adv:set-navigation source destination  direction)
-	   (adv:set-navigation destination source  (adv:reverse-direction direction))
+	   (adv:set-navigation destination source  reverse-dir)
 	   (navigation-path (cddr path)))))
 
 
@@ -605,14 +619,16 @@ if no weapon can be found, nil is returned"
 (defmacro defworld (gameworld-description &body defworld-body)
   (let ((world-var (gensym))
 	(tmp (gensym)))
-    `(let ((,world-var (make-instance 'adv::GameWorld :description "The game we play")))
+    `(let ((,world-var (make-instance 'adv::GameWorld :description ,gameworld-description)))
        (labels ((current-world () 
 			       ,world-var)
 		(internalize-item (item)
 				  (adv:add-to-inventory item ,world-var)
 				  item)
 		(create-internalized-item (class description params)
-		  (internalize-item (apply #'make-instance (cons class (cons :description (cons description  params)))))))
+			  (internalize-item
+			   (apply #'make-instance 
+				  (cons class (cons :description (cons description  params)))))))
 	 ;; XXX  This flet could be made much simpler!
 	 (flet ((new-location (description &rest location-body)
 			(create-internalized-item 'adv::Location description location-body))

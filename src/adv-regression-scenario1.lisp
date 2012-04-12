@@ -37,7 +37,7 @@
 			  )))
 	   (goal-location    (stash (new-location "The goal")
 				    (stash 
-				     (new-monster "Norbert the Norwegian ridgeback")
+				     (new-monster "Norbert the Norwegian ridgeback" :health 300) ;; Effectively immortal
 				     (new-weapon "A tail with fierce looking horns"
 						 :strength    50
 						 :reliability 0.2)
@@ -56,7 +56,16 @@
   (rco "" ""))
 
 (define-test test-quit-cmd
-  (rco  "quit" "Ttfn"))
+  (rco  "quit" ""))
+
+(define-test test-exits-from-start
+  (rco  "look" "exit: north."))
+
+(define-test test-exits-from-target
+  (rco  (format nil"look~%go north~%look") "exit: south."))
+
+(define-test test-quit-cmd
+  (rco  "look" "Ttfn"))
 
 (define-test test-look-for-sword
   (rco  "look" "sword of generic strikes"))
@@ -75,3 +84,5 @@ kill monster" "You are dead"))
   (rco "take scroll
 read scroll" "Fooxxxy"))
 
+;; XXX Check that we see an exit to the north.
+;; XXX Check that when going noth we get to the goal and that we see an exit to the south.
