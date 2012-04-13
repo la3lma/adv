@@ -22,5 +22,12 @@ clisp -q -c "src/adv-regression.lisp"
 clisp -q -c "src/adv-regression-scenario1.lisp"
 
 ## And run regression tests
-clisp  -q -x '(load "src/adv")(load "src/adv-regression.lisp")(load "src/adv-regression-scenario1.lisp")(in-package :adv-regression-scenario1)(run-tests)'
+
+for x in core-functionality scenario1; do
+ clisp  -q -x "(load \"src/adv\")(load \"src/adv-regression.lisp\")(load \"src/adv-regression-$x.lisp\")(in-package :adv-regression-$x)(run-tests)"
+done
+
+# clisp  -q -x '(load "src/adv")(load "src/adv-regression.lisp")(load "src/adv-regression-core-functionality.lisp")(in-package :adv-regression-core-functionality)(run-tests)'
+
+# clisp  -q -x '(load "src/adv")(load "src/adv-regression.lisp")(load "src/adv-regression-scenario1.lisp")(in-package :adv-regression-scenario1)(run-tests)'
 
