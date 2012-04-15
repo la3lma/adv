@@ -124,9 +124,9 @@
   ())
 
 (defgeneric extract-damage-points (weapon)
-  (:method ((w Weapon))
+  (:method ((weapon Weapon))
 	   (if (<= (random 1) (reliability weapon))
-	       (strength w)
+	       (strength weapon)
 	     0))
 
   (:method ((f Fighter))
@@ -444,8 +444,12 @@ if no weapon can be found, nil is returned"
                    (weapon (identify weapon-desc (inventory p))))
                (let ((tgt (if (null target) nil (car target)))
                      (wpn (if (null weapon) p   (car weapon))))
-                 (attack p  tgt  wpn)
-                 (counterattack tgt p)))))
+		 (cond ((null tgt)
+			(format (out-stream p) "~% Don't know what to attack, perhaps be a bit more precise?"))
+		       (t
+			(format *standard-output* "pre-attack p=~s, tgt=~s, wpn= ~s" p tgt wpn)
+			(attack p  tgt  wpn)
+			(counterattack tgt p)))))))
   
   (:method ((c InventoryCmd) (p Player) (l List))
            (describe-for-user (out-stream p) p))
@@ -481,7 +485,7 @@ if no weapon can be found, nil is returned"
 (defparameter *commands*
   (list
    (make-instance 'InventoryCmd :names '("inventory" "inv" "list"))
-   (make-instance 'LookCmd      :names '("look" "peek" "see" "glance"))
+   (make-instance 'LookCmd      :names '("look" "peek" "see" "glance" "ls"))
    (make-instance 'GoCmd        :names '("go" "move" "run" "jump" "crawl"))
    (make-instance 'FightCmd     :names '("fight" "kill" "strike" "slash" "slab" "attack" "stab" "maim" "hit"))
    (make-instance 'TakeCmd      :names '("take" "grab" "pick"))
