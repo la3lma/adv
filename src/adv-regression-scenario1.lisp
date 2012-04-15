@@ -37,7 +37,7 @@
 			  )))
 	   (goal-location    (stash (new-location "The goal")
 				    (stash 
-				     (new-monster "Norbert the Norwegian ridgeback" :health 300) ;; Effectively immortal
+				     (new-monster "Norbert the Norwegian ridgeback dragon" :health 300) ;; Effectively immortal
 				     (new-weapon "A tail with fierce looking horns"
 						 :strength    50
 						 :reliability 0.2)
