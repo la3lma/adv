@@ -8,7 +8,7 @@
 
 (asdf:defsystem adv
   :name "adv"
-  :author "Bjørn Remseth; la3lma@gmail.com"
+  :author "Bjorn Remseth; la3lma@gmail.com"
   :version "0.1"
   :licence "Apache 2.0"
   :description "A tiiiny little text oriented adventure game"
@@ -32,7 +32,7 @@
 
 (asdf:defsystem adv-regression
                 :name "adv test"
-                :author "Bjørn Remseth; la3lma@gmail.com"
+                :author "Bjorn Remseth; la3lma@gmail.com"
                 :version "0.1"
                 :licence "Apache 2.0"
                 :description "testing adv"
@@ -47,7 +47,7 @@
 
 (asdf:defsystem adv-regression-core-functionality
                 :name "adv test scenario 1"
-                :author "Bjørn Remseth; la3lma@gmail.com"
+                :author "Bjorn Remseth; la3lma@gmail.com"
                 :version "0.1"
                 :licence "Apache 2.0"
                 :description "testing adv"
@@ -57,12 +57,12 @@
                 ((:module "src" ;; XXX Separate directories would rule here
                           :serial t
                           :components (
-                                       (:file "adv-regression-core-functionality")
+                                       (:file "adv-resliegression-core-functionality")
                                        ))))
 
 (asdf:defsystem adv-regression-scenario1
                 :name "adv test scenario 1"
-                :author "Bjørn Remseth; la3lma@gmail.com"
+                :author "Bjorn Remseth; la3lma@gmail.com"
                 :version "0.1"
                 :licence "Apache 2.0"
                 :description "testing adv"
