@@ -447,7 +447,6 @@ if no weapon can be found, nil is returned"
 		 (cond ((null tgt)
 			(format (out-stream p) "~% Don't know what to attack, perhaps be a bit more precise?"))
 		       (t
-			(format *standard-output* "pre-attack p=~s, tgt=~s, wpn= ~s" p tgt wpn)
 			(attack p  tgt  wpn)
 			(counterattack tgt p)))))))
   
