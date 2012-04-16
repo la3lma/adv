@@ -75,4 +75,19 @@
                                        (:file "adv-regression-scenario1")
                                        ))))
 
+(asdf:defsystem adv-regression-scenario2
+                :name "adv test scenario 2"
+                :author "Bjorn Remseth; la3lma@gmail.com"
+                :version "0.1"
+                :licence "Apache 2.0"
+                :description "testing adv"
+                :depends-on (:adv :adv-regression)
+                :serial t
+                :components
+                ((:module "src" ;; XXX Separate directories would rule here
+                          :serial t
+                          :components (
+                                       (:file "adv-regression-scenario2")
+                                       ))))
+
 
