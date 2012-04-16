@@ -581,7 +581,7 @@ if no weapon can be found, nil is returned"
 
 (defun find-matching-navigations (directionnames location)
   (loop for nav in (navigation location)
-        when (intersection directionnames (name location) :test #'string-equal)
+        when (intersection directionnames (names nav) :test #'string-equal)
         collect nav))
 
 (defun set-navigation (origin destination names)
@@ -598,25 +598,28 @@ if no weapon can be found, nil is returned"
 ;; XXX This function is very brittle, it should have more parameter checking,
 ;;     and it should be iterative, not tail recursive (although that isn't so
 ;;     awful in itself).
+
 (defun navigation-path (&rest path)
-  (when (>= (length path) 3)
-	 (let*  ((source       (first  path))
-		 (direction    (second path))
-		 (destination  (third  path))
-		 (reverse-dir  (reverse-direction direction)))
+  (labels ((np (path)
+	       (when (>= (length path) 3)
+		 (let*  ((source       (first  path))
+			 (direction    (second path))
+			 (destination  (third  path))
+			 (reverse-dir  (reverse-direction direction)))
+		   
+		   (if (null source)
+		       (error "Source can't be null"))
+		   (if (null destination)
+		       (error "Destination can't be null, direction was ~S" direction))
+		   (if (null direction)
+		       (error "Direction can't be null"))
+		   (if (null reverse-dir)
+		       (error "Reverse direction can't be null"))
 
-	   (if (null source)
-	       (error "Source can't be null"))
-	   (if (null destination)
-	       (error "Destination can't be null, direction was ~S" direction))
-	   (if (null direction)
-	       (error "Direction can't be null"))
-	   (if (null reverse-dir)
-	       (error "Reverse direction can't be null"))
-
-	   (adv:set-navigation source destination  direction)
-	   (adv:set-navigation destination source  reverse-dir)
-	   (navigation-path (cddr path)))))
+		   (adv:set-navigation source destination  direction)
+		   (adv:set-navigation destination source  reverse-dir)
+		   (np (cddr path))))))
+    (np path)))
 
 
 

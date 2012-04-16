@@ -33,6 +33,9 @@
 				     (new-item   "A well")    
 				     ))))
       
+      ;; We start out with a simple linear topology.   When we get
+      ;; that working we'll progress go more interesting topologies.
+
       (navigation-path initial-location 
 		       adv::*north* (new-location "A narrow path")
 		       adv::*north* (new-location "A troll operated bridge")
@@ -47,10 +50,23 @@
 		       adv::*north* (new-location "A palace")
 		       adv::*north* (new-location "A cave")
 		       adv::*north* (new-location "A small boathouse")
+		       adv::*north* (new-location "An uninteresting stretch of water")
+		       adv::*north* (new-location "A small island")
 		       adv::*north* goal-location))))
-  
+
 ;;
 ;;  THE TESTS
 ;;
 
-;; So far none
+;; Tests are added when bugs are detected.  The procedure is to
+;; play the game until a bug is detected, then to add a test
+;; that fails due to the newly detected bug, then to fix the bug
+;; and then to commit code that fixes the bug along with the test
+;; that fails unless the bug is fixed.  Rinse&repeat.
+
+(defun rco (input expected)
+  (adv-regression:run-command-oneliner #'initialize-fixture input expected))
+
+(define-test test-go-north-until-bridge
+  (rco (format nil"~%go north~%go north~%look") "A troll operated bridge"))
+
