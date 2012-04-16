@@ -1,0 +1,5 @@
+(require :adv)
+(require :adv-regression)
+(require :adv-regression-scenario1)
+(require :adv-regression-scenario2)
+(adv-regression:run-testgame #'adv-regression-scenario2:initialize-fixture)
