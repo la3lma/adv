@@ -63,7 +63,7 @@
   (rco  "look" "exit: north."))
 
 (define-test test-exits-from-target
-  (rco  (format nil"look~%go north~%look") "exit: south."))
+  (rco  (format nil "look~%go north~%look") "exit: south."))
 
 (define-test test-quit-cmd
   (rco  "look" "Ttfn"))
