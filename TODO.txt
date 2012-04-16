@@ -1,8 +1,8 @@
-o Restructure the tests to be divided into two parts
-   1. A generic test-runner part
-   2. A specific part that sets up the scenarios and runs the tests
 
-o Consider some syntactic sugar to describe the worlds we're playing in, perhaps making a domain specific language (within lisp) for it.
+o Make it compile & run
+o Make a fun twenty-room game
+
+
 o Look at some state of the art Common Lisp projects (perhaps https://github.com/fons/cl-mongo/blob/master/cl-mongo.asd)
    And see how they are structured.   Learn an copy best practices. Use quicklisp.
 o Look into the whole MCL thing.  Perhaps it is useful? So far I can't even make it compile :-(
