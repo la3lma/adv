@@ -4,7 +4,8 @@
 (asdf:operate 'asdf:load-op :lisp-unit)
 
 (defpackage :adv-regression-scenario1
-  (:use :common-lisp :lisp-unit :adv-regression :adv))
+  (:use :common-lisp :lisp-unit :adv-regression :adv)
+  (:export :initialize-fixture))
 
 (in-package :adv-regression-scenario1)
 
