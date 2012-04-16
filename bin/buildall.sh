@@ -15,15 +15,17 @@ etags $(find . -name '*.lisp')
 clisp -q -x '(asdf:compile-system :adv)'
 clisp -q -x '(asdf:compile-system :adv-regression)'
 clisp -q -x '(asdf:compile-system :adv-regression-scenario1)'
+clisp -q -x '(asdf:compile-system :adv-regression-scenario2)'
 
 ## So instead we do this
 clisp -q -c "src/adv.lisp"
 clisp -q -c "src/adv-regression.lisp"
 clisp -q -c "src/adv-regression-scenario1.lisp"
+clisp -q -c "src/adv-regression-scenario2.lisp"
 
 ## And run regression tests
 
-for x in core-functionality scenario1; do
+for x in core-functionality scenario1 scenario2; do
  clisp  -q -x "(load \"src/adv\")(load \"src/adv-regression.lisp\")(load \"src/adv-regression-$x.lisp\")(in-package :adv-regression-$x)(run-tests)"
 done
 
