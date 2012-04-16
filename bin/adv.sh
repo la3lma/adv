@@ -1,1 +1,1 @@
-#!/opt/local/bin/sbcl  --load bin/adv-game.lisp
+#!/opt/local/bin/sbcl  --noinform --load bin/adv-game.lisp
