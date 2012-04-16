@@ -209,6 +209,9 @@
 ;;;
 
 
+;; XXX Shoud have a test that looks for player and fails if the
+;;     player can't be found
+
 (defun inner-game-repl (player &key
                         (input *standard-input* )
                         (output *standard-output*))
