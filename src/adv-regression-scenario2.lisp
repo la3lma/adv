@@ -23,14 +23,14 @@
 	    (stash (new-location  "The start")
 		   (new-item   "An item")
 		   (new-readable "Ancient looking dusty scroll"
-				 :content "Fooxxxy")
+				 :content "Your mission is to find the coin and drop it in the well")
 		   (new-player   "The player"
 				 :in-stream input
 				 :out-stream output)))
 
 	   (goal-location    (stash (new-location "The wellhouse")
 				    (stash 
-				     (new-item   "A well")    
+				     (new-item   "A well" :is-fixture-p t)    
 				     ))))
       
       ;; We start out with a simple linear topology.   When we get
@@ -44,7 +44,8 @@
 		       adv::*north* (new-location "A small hut with gingerbread roof and walls and candy glued to its walls and roof")
 		       adv::*north* (new-location "A narrow canyon with dangerous-looking boulders on all sides")
 		       adv::*north* (new-location "A lush green valley with slightly weird-looking houses spread around")
-		       adv::*north* (new-location "A desert")
+		       adv::*north* (stash (new-location "A desert")
+					   (new-item "A gold coin with an angel on one side and a devil on the other"))
 		       adv::*north* (new-location "An oasis")
 		       adv::*north* (new-location "A desert")
 		       adv::*north* (new-location "A palace")

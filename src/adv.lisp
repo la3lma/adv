@@ -1,4 +1,4 @@
-;; -*-LISP-*-
+; -*-LISP-*-
 
 ;;
 ;; Copyright 2012 Bjørn Remseth (rmz@rmz.no)
@@ -57,7 +57,10 @@
 
 
 (defclass  Located ()
-  ((location    :accessor location    :initarg :location)))
+  (
+   ;; If something is a fixture, then it can't be moved
+   (is-fixture-p :accessor is-fixture-p :initarg :is-fixture-p :initform nil)
+   (location     :accessor location     :initarg :location)))
 
 (defclass Player (Describable Inventory Located Fighter Inhabitant)
   ((out-stream :accessor out-stream :initarg :out-stream :initform *standard-output*)
@@ -340,6 +343,12 @@ if there were an empty string between them."
 
 (defgeneric move-object (ob source destination)
   (:method-combination progn))
+
+(defmethod move-object :around ((ob Located) (source t) (destination t))
+  ;; XXX If something can't be moved, that should be signalled in some
+  ;;      way.
+  (unless (is-fixture-p ob)
+    (call-next-method)))
 
 (defmethod move-object progn ((ob Located) (source t) (destination Location))
   (setf (location ob) destination) )
