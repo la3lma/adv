@@ -73,16 +73,26 @@
   ((names  :accessor names   :initarg :names)
    (destination :accessor destination :initarg :destination)))
 
+(defun describe-into-string (describable)
+  "XXX This may or may not be a good idea"
+  (let ((outputstream (make-string-output-stream)))
+    (describe-for-user outputsream describable)
+    (get-output-stream-string outputstream)))
+
 (defgeneric describe-for-user (stream describable)
   (:documentation "Describe something for a user")
+
   (:method ((stream t) (l Location))
            (format stream "~% Location: ~A" (description l))
-           (format stream "~% You see:~{~%  ~a~}." (mapcar #'description (inventory l)))
-           (let ((directions (mapcar #'car  (mapcar #'names  (navigation l)))))
-             (format stream "~%      exit~p:~{ ~a~^, ~}." (length directions) directions)))
+	   (let ((inv (inventory l))
+		 (directions (mapcar #'car  (mapcar #'names  (navigation l)))))
+	     (format stream "~%inv = ~s, directions = ~s." inv directions)
+	     (if inv 
+		 (format stream "~% You see:~{~%  ~a~}." (mapcar #'description inv)))
+	     (if directions
+		 (format stream "~%      exit~p:~{ ~a~^, ~}." (length directions) directions))))
   
   (:method ((stream t)(i Inventory))
-	   ;; XXX Perhaps call describe-for-user recursively with output to a  string intstead?
            (format stream "Inventory for ~s: ~{~%  ~a~}." (description i) (mapcar #'description (inventory i))))
 
   (:method ((stream t)(i Describable))
