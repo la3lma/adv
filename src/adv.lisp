@@ -350,18 +350,14 @@ if there were an empty string between them."
   (:method-combination and)
   (:method and ((ob T) (source T) (destination T))
            t)
+  (:method and ((ob Located) (source T) (destination T))
+           (not (is-fixture-p ob)))
   (:method and ((ob Monster) (source T) (destination Player))
            nil))
 
 
 (defgeneric move-object (ob source destination)
   (:method-combination progn))
-
-(defmethod move-object :around ((ob Located) (source t) (destination t))
-  ;; XXX If something can't be moved, that should be signalled in some
-  ;;      way.
-  (unless (is-fixture-p ob)
-    (call-next-method)))
 
 (defmethod move-object progn ((ob Located) (source t) (destination Location))
   (setf (location ob) destination) )

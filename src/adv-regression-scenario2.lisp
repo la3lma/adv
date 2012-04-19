@@ -31,7 +31,7 @@
     (let* ((initial-location 
 	    (stash (new-location  "The start")
 		   (new-item   "An item")
-		   (traceval "a traced knife" (new-item   "A stone table that seems to grow out of the ground" :is-fixture-p t))
+		   (new-item   "A stone table that seems to grow out of the ground" :is-fixture-p t)
 		   (new-weapon "A knife")
 		   (new-readable "Ancient looking dusty scroll"
 				 :content "Your mission is to find the coin and drop it in the well")
