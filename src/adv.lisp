@@ -76,7 +76,7 @@
 (defun describe-into-string (describable)
   "XXX This may or may not be a good idea"
   (let ((outputstream (make-string-output-stream)))
-    (describe-for-user outputsream describable)
+    (describe-for-user outputstream describable)
     (get-output-stream-string outputstream)))
 
 (defgeneric describe-for-user (stream describable)
@@ -86,17 +86,16 @@
            (format stream "~% Location: ~A" (description l))
 	   (let ((inv (inventory l))
 		 (directions (mapcar #'car  (mapcar #'names  (navigation l)))))
-	     (format stream "~%inv = ~s, directions = ~s." inv directions)
 	     (if inv 
 		 (format stream "~% You see:~{~%  ~a~}." (mapcar #'description inv)))
 	     (if directions
 		 (format stream "~%      exit~p:~{ ~a~^, ~}." (length directions) directions))))
   
-  (:method ((stream t)(i Inventory))
-           (format stream "Inventory for ~s: ~{~%  ~a~}." (description i) (mapcar #'description (inventory i))))
-
   (:method ((stream t)(i Describable))
-           (format stream "~a" (description i))))
+           (format stream "~a" (description i)))
+
+  (:method ((stream t)(i Player))
+           (format stream "Inventory for ~s: ~{~%  ~a~}." (description i) (mapcar #'description (inventory i)))))
 
 
 (defgeneric move (Player List)
