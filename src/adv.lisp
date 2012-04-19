@@ -24,17 +24,18 @@
   (:use :common-lisp)
   (:export  :add-to-inventory :inner-game-repl :game-repl 
 	    :find-player :inventory :move-object :reverse-direction 
-	    :set-navigation  :defworld :navigation-path :stash :new-weapon :new-item :new-monster :new-location :new-player :new-readable))
+	    :set-navigation  :defworld :navigation-path 
+	    :stash :new-weapon :new-item :new-monster
+	    :new-location :new-player :new-readable))
   
 (in-package :adv)
-
 
 ;;;
 ;;; THE GAME MODEL
 ;;;
 
 (defclass Describable ()
-  ((description :accessor description :initarg :description :initform ""))
+  ((description :accessor description :initarg :description :initform "XXX"))
   (:documentation "Something that is describable for a user"))
 
 (defclass Inventory ()
@@ -54,7 +55,6 @@
 
 (defclass Location (Describable Inventory)
   ((navigation  :accessor navigation   :initarg :navigation :initform '())))
-
 
 (defclass  Located ()
   (
@@ -77,12 +77,17 @@
   (:documentation "Describe something for a user")
   (:method ((stream t) (l Location))
            (format stream "~% Location: ~A" (description l))
-           (format stream "~% With inventory:~{~%  ~a~}." (mapcar #'description (inventory l)))
+           (format stream "~% You see:~{~%  ~a~}." (mapcar #'description (inventory l)))
            (let ((directions (mapcar #'car  (mapcar #'names  (navigation l)))))
              (format stream "~%      exit~p:~{ ~a~^, ~}." (length directions) directions)))
-
+  
   (:method ((stream t)(i Inventory))
-           (format stream "Inventory for ~s: ~{~%  ~a~}." (description i) (mapcar #'description (inventory i)))))
+	   ;; XXX Perhaps call describe-for-user recursively with output to a  string intstead?
+           (format stream "Inventory for ~s: ~{~%  ~a~}." (description i) (mapcar #'description (inventory i))))
+
+  (:method ((stream t)(i Describable))
+           (format stream "~a" (description i))))
+
 
 (defgeneric move (Player List)
   (:documentation "Move the player somewhere based on some description of a direction")
@@ -98,7 +103,6 @@
                  (return-from move)))
              (if (not (null direction))
                  (format (out-stream p) "Don't know how to go ~{~s~^ ~}" l)))))
-
 
 ;;;
 ;;; Informational items
@@ -641,13 +645,15 @@ if no weapon can be found, nil is returned"
        (labels ((current-world () 
 			       ,world-var)
 		(internalize-item (item)
-				  (adv:add-to-inventory item ,world-var)
+				  (add-to-inventory item ,world-var)
 				  item)
 		(create-internalized-item (class description params)
+
 			  (internalize-item
 			   (apply #'make-instance 
 				  (cons class (cons :description (cons description  params)))))))
 	 ;; XXX  This flet could be made much simpler!
+
 	 (flet ((new-location (description &rest location-body)
 			(create-internalized-item 'adv::Location description location-body))
 		(new-item (description &rest description-body)

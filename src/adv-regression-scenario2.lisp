@@ -13,6 +13,13 @@
 ;;  THE FIXTURE
 ;;
 
+(defvar *traced-value* nil)
+
+(defun traceval (title value)
+  (setq *traced-value* value)
+  (format *standard-output* "~%The ~a has value ~s" title value))
+
+
 (defun initialize-fixture (&key (input *standard-input*) (output *standard-output*))
   "Set up a gameworld, and return that gameworld as the result"
   
@@ -22,10 +29,13 @@
     (let* ((initial-location 
 	    (stash (new-location  "The start")
 		   (new-item   "An item")
+		   (traceval "the table" (new-item   "A stone table that seems to grow out of the ground" :is-fixture-p t))
+			     
+		   (new-weapon "A knife")
 		   (new-readable "Ancient looking dusty scroll"
 				 :content "Your mission is to find the coin and drop it in the well")
 		   (new-player   "The player"
-				 :in-stream input
+				 :in-stream  input
 				 :out-stream output)))
 
 	   (goal-location    (stash (new-location "The wellhouse")
