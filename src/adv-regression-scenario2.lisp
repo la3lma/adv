@@ -18,8 +18,7 @@
 (defun traceval (title value)
   (setq *traced-value* value)
   (format *standard-output* "~%The ~a has value ~s" title value)
-  value
-)
+  value)
 
 
 (defun initialize-fixture (&key (input *standard-input*) (output *standard-output*))
