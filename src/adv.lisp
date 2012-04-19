@@ -160,7 +160,7 @@
 
 ;; XXX This is the core of the battle system, this is where
 ;;     the attack/counterattack system should be injected.
-;;     Also, sound/graphics should be focused at this point.
+;;     Also, sound/graphics could be focused at this point.
 
 
 
