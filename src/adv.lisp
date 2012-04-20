@@ -39,7 +39,8 @@
   (:documentation "Something that is describable for a user"))
 
 (defclass Inventory ()
-  ((inventory :accessor inventory :initarg :inventory :initform '()))
+  ((inventory        :accessor inventory        :initarg :inventory        :initform '())
+   (is-transparent-p :accessor is-transparent-p :initarg :is-transparent-p :initform '()))
   (:documentation "Something that can contain other objects"))
 
 (defclass Inhabitant ()
@@ -456,12 +457,14 @@ if no weapon can be found, nil is returned"
   (:method ((c DropCmd) (p Player) (query List))
            (multiple-value-bind (object-desc destination-desc)
                (split-on-word (cdr query) '("on" "onto")) ;; XXX Extract into variable holding keywords
-
-	     ;; A test to see if we can parse relationa sentences
-	     (let ((ob          (identify object-desc     (inventory p)))
-		   (destination (identify destination-desc (inventory (location p)))))
-	       (format *standard-output* "~% object = ~s, destination = ~s" ob destination))
-	     (find-and-move (out-stream p) query p (location p) "Dropped")))
+	     (cond (destination-desc
+		    ;; A test to see if we can parse relationa sentences
+		    (let ((ob          (identify object-desc     (inventory p)))
+			  (destination (identify destination-desc (inventory (location p)))))
+		      (format *standard-output* "~% object = ~s, destination = ~s" ob destination)
+		      (find-and-move (out-stream p) object-desc p destination "Dropped onto")))
+		   (t
+		    (find-and-move (out-stream p) query p (location p) "Dropped")))))
 
   (:method ((c FightCmd) (p Player) (query List))
            ;; Is the query on the format <target> (<with> <weapon>)?
