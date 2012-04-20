@@ -506,7 +506,7 @@ if no weapon can be found, nil is returned"
   (list
    (make-instance 'InventoryCmd :names '("inventory" "inv" "list"))
    (make-instance 'LookCmd      :names '("look" "peek" "see" "glance" "ls"))
-   (make-instance 'GoCmd        :names '("go" "move" "run" "jump" "crawl"))
+   (make-instance 'GoCmd        :names '("go" "move" "run" "jump" "crawl" "hop"))
    (make-instance 'FightCmd     :names '("fight" "kill" "strike" "slash" "slab" "attack" "stab" "maim" "hit"))
    (make-instance 'TakeCmd      :names '("take" "grab" "pick"))
    (make-instance 'DropCmd      :names '("drop" "leave" "stash"))
@@ -531,7 +531,8 @@ if no weapon can be found, nil is returned"
 (defun parse-wordlist (wl player)
   (let ((cmd (find-command (first wl) (commands-available-for-player player))))
     (if (not (null cmd))
-        (applyCmd cmd player wl))))
+        (applyCmd cmd player wl)
+      (format (out-stream player) "~% Huh?"))))
 
 ;;
 ;;  The search engine  ;)
