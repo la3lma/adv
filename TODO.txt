@@ -1,7 +1,7 @@
-
-o Make it possible to drop/put something on/into something (table,
-  well).
-o Make drop actions trigger state chnges
+o When attacking a table, the program fails. Fix that.
+o Make it possible to drop/put something on/into something (table,  well).
+o Make drop actions able to trigger state changes (perhaps we should
+   generalize that to let movement trigger state changes)
 
 o Make a fun twenty-room game
 
