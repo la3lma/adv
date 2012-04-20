@@ -1,4 +1,7 @@
 o When attacking a table, the program fails. Fix that.
+o Put syntax code in a few very specific places, tie it to the
+   commands.  Don't embed syntax descriptions in code (or at least
+   don't do it very much).
 o Make it possible to drop/put something on/into something (table,  well).
 o Make drop actions able to trigger state changes (perhaps we should
    generalize that to let movement trigger state changes)

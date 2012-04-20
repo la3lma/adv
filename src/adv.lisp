@@ -454,10 +454,16 @@ if no weapon can be found, nil is returned"
            (find-and-move (out-stream p) query (location p) p "Got it"))
 
   (:method ((c DropCmd) (p Player) (query List))
-           (find-and-move (out-stream p) query p (location p) "Dropped"))
+           (multiple-value-bind (object-desc destination-desc)
+               (split-on-word (cdr query) '("on" "onto")) ;; XXX Extract into variable holding keywords
+
+	     ;; A test to see if we can parse relationa sentences
+	     (let ((ob          (identify object-desc     (inventory p)))
+		   (destination (identify destination-desc (inventory (location p)))))
+	       (format *standard-output* "~% object = ~s, destination = ~s" ob destination))
+	     (find-and-move (out-stream p) query p (location p) "Dropped")))
 
   (:method ((c FightCmd) (p Player) (query List))
-           
            ;; Is the query on the format <target> (<with> <weapon>)?
            (multiple-value-bind (target-desc weapon-desc)
                (split-on-word (cdr query) '("with" "using"))
@@ -504,12 +510,14 @@ if no weapon can be found, nil is returned"
 
 (defparameter *commands*
   (list
+   ;;  XXX The secondary syntax should also be defined here, such as the "at" when putting,
+   ;;      et.  No syntax should be embedded in program code.
    (make-instance 'InventoryCmd :names '("inventory" "inv" "list"))
    (make-instance 'LookCmd      :names '("look" "peek" "see" "glance" "ls"))
    (make-instance 'GoCmd        :names '("go" "move" "run" "jump" "crawl" "hop"))
    (make-instance 'FightCmd     :names '("fight" "kill" "strike" "slash" "slab" "attack" "stab" "maim" "hit"))
    (make-instance 'TakeCmd      :names '("take" "grab" "pick"))
-   (make-instance 'DropCmd      :names '("drop" "leave" "stash"))
+   (make-instance 'DropCmd      :names '("drop" "leave" "stash" "put"))
    (make-instance 'ReadCmd      :names '("read"))
    (make-instance 'HelpCmd      :names '("?" "help" "what"))
    (make-instance 'QuitCmd      :names '("quit" "bye" "q"))))
@@ -645,8 +653,7 @@ if no weapon can be found, nil is returned"
 ;; XXX This is a work in progress.   When done, it will make the 
 ;;      world
 (defmacro defworld (gameworld-description &body defworld-body)
-  (let ((world-var (gensym))
-	(tmp (gensym)))
+  (let ((world-var (gensym)))
     `(let ((,world-var (make-instance 'adv::GameWorld :description ,gameworld-description)))
        (labels ((current-world () 
 			       ,world-var)
