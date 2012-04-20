@@ -1,10 +1,12 @@
 
-o Make it compile & run
+o Make it possible to drop/put something on/into something (table,
+  well).
+o Make drop actions trigger state chnges
+
 o Make a fun twenty-room game
 
-
 o Look at some state of the art Common Lisp projects (perhaps https://github.com/fons/cl-mongo/blob/master/cl-mongo.asd)
-   And see how they are structured.   Learn an copy best practices. Use quicklisp.
+   And see how they are structured.   Learn an copy best practices.
 o Look into the whole MCL thing.  Perhaps it is useful? So far I can't even make it compile :-(
 o Look into terminal graphics.
 o Look in to letting a  javascript client talking directly to the lisp server.
