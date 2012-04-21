@@ -1,4 +1,4 @@
-; -*-LISP-*-
+;; -*-LISP-*-
 
 ;;
 ;; Copyright 2012 Bjørn Remseth (rmz@rmz.no)
@@ -25,7 +25,7 @@
   (:export  :add-to-inventory :inner-game-repl :game-repl 
 	    :find-player :inventory :move-object :reverse-direction 
 	    :set-navigation  :defworld :navigation-path 
-	    :stash :new-weapon :new-item :new-monster
+	    :stash :new-weapon :new-item :new-monster :new-container
 	    :new-location :new-player :new-readable))
   
 (in-package :adv)
@@ -70,6 +70,9 @@
 (defclass Item (Describable Located Inhabitant)
   ())
 
+(defclass Container (Describable Located Inhabitant Inventory)
+  ())
+
 (defclass Navigation ()
   ((names  :accessor names   :initarg :names)
    (destination :accessor destination :initarg :destination)))
@@ -91,7 +94,12 @@
 		 (format stream "~% You see:~{~%  ~a~}." (mapcar #'description inv)))
 	     (if directions
 		 (format stream "~%      exit~p:~{ ~a~^, ~}." (length directions) directions))))
-  
+
+  (:method ((stream t)(c Container))
+	   (format stream "~% Displaying a container")
+           (format stream "~a ~{~% ~a~}" (description c) (mapcar #'description (inventory c))))
+
+
   (:method ((stream t)(i Describable))
            (format stream "~a" (description i)))
 
@@ -458,11 +466,11 @@ if no weapon can be found, nil is returned"
            (multiple-value-bind (object-desc destination-desc)
                (split-on-word (cdr query) '("on" "onto")) ;; XXX Extract into variable holding keywords
 	     (cond (destination-desc
-		    ;; A test to see if we can parse relationa sentences
+		    ;; A test to see if we can parse relational sentences
 		    (let ((ob          (identify object-desc     (inventory p)))
 			  (destination (identify destination-desc (inventory (location p)))))
-		      (format *standard-output* "~% object = ~s, destination = ~s" ob destination)
-		      (find-and-move (out-stream p) object-desc p destination "Dropped onto")))
+		      (format *standard-output* "~% object = ~s, destination = ~s (~s)" ob destination destination)
+		      (find-and-move (out-stream p) object-desc p destination "Dropped onto/into")))
 		   (t
 		    (find-and-move (out-stream p) query p (location p) "Dropped")))))
 
@@ -672,8 +680,10 @@ if no weapon can be found, nil is returned"
 
 	 (flet ((new-location (description &rest location-body)
 			(create-internalized-item 'adv::Location description location-body))
-		(new-item (description &rest description-body)
-			(create-internalized-item 'adv::Item description description-body))
+		(new-item (description &rest item-body)
+			(create-internalized-item 'adv::Item description item-body))
+		(new-container (description &rest container-body)
+			(create-internalized-item 'adv::Container description container-body))
 		(new-player (description &rest player-body)
 			(create-internalized-item 'adv::Player description player-body))
 		(new-monster (description &rest monster-body)

@@ -24,13 +24,13 @@
 (defun initialize-fixture (&key (input *standard-input*) (output *standard-output*))
   "Set up a gameworld, and return that gameworld as the result"
   
-  (format *standard-output* "~% Initializing fixture" )
+  (format *standard-output* "~% Initializing fixture")
   
   (defworld "The game we play"
     (let* ((initial-location 
 	    (stash (new-location  "The start")
 		   (new-item   "An item")
-		   (new-item   "A stone table that seems to grow out of the ground" :is-fixture-p t)
+		   (new-container   "A stone table that seems to grow out of the ground" :is-fixture-p t)
 		   (new-weapon "A knife")
 		   (new-readable "Ancient looking dusty scroll"
 				 :content "Your mission is to find the coin and drop it in the well")
