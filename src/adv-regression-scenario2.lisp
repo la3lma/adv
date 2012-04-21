@@ -30,7 +30,8 @@
     (let* ((initial-location 
 	    (stash (new-location  "The start")
 		   (new-item   "An item")
-		   (new-container   "A stone table that seems to grow out of the ground" :is-fixture-p t)
+		   (stash (new-container   "A stone table that seems to grow out of the ground" :is-fixture-p t :is-transparent-p t)
+			  (new-item "a torch"))
 		   (new-weapon "A knife")
 		   (new-readable "Ancient looking dusty scroll"
 				 :content "Your mission is to find the coin and drop it in the well")
