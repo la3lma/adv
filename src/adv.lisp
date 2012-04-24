@@ -77,16 +77,18 @@
   ((names  :accessor names   :initarg :names)
    (destination :accessor destination :initarg :destination)))
 
+(defconstant *default-indentation-level* 3)
+
 (defun describe-into-string (describable)
   "XXX This may or may not be a good idea"
   (let ((outputstream (make-string-output-stream)))
-    (describe-for-user outputstream describable)
+    (describe-for-user outputstream describable *default-indentation-level*)
     (get-output-stream-string outputstream)))
 
-(defgeneric describe-for-user (stream describable)
+(defgeneric describe-for-user (stream describable indent)
   (:documentation "Describe something for a user")
 
-  (:method ((stream t) (l Location))
+  (:method ((stream t) (l Location) (indent Integer))
            (format stream "~% Location: ~A" (description l))
 	   (let ((inv (inventory l))
 		 (directions (mapcar #'car  (mapcar #'names  (navigation l)))))
@@ -95,16 +97,16 @@
 	     (if directions
 		 (format stream "~%      exit~p:~{ ~a~^, ~}." (length directions) directions))))
 
-  (:method ((stream t)(c Container))
+  (:method ((stream t)(c Container)(indent Integer))
 	   (format stream "~% Displaying a container")
 	   ;; XXX The indentation should be according to some indentation level that should be
 	   ;;     a parameter to the prettyprinter (describe-for-user)
            (format stream "~a ~{~%  -> ~a~}" (description c) (mapcar #'description (inventory c))))
 
-  (:method ((stream t)(i Describable))
+  (:method ((stream t)(i Describable)(indent Integer))
            (format stream "~a" (description i)))
 
-  (:method ((stream t)(i Player))
+  (:method ((stream t)(i Player)(indent Integer))
            (format stream "Inventory for ~s: ~{~%  ~a~}." (description i) (mapcar #'description (inventory i)))))
 
 
@@ -501,7 +503,7 @@ if no weapon can be found, nil is returned"
 			(counterattack tgt p)))))))
   
   (:method ((c InventoryCmd) (p Player) (l List))
-           (describe-for-user (out-stream p) p))
+           (describe-for-user (out-stream p) p *default-indentation-level*))
 
   (:method ((c ReadCmd) (p Player) (l List))
 	   (let ((items (identify l (find-readables p))))
@@ -514,7 +516,7 @@ if no weapon can be found, nil is returned"
 		    (format (out-stream p) "~% Hmmm, that isn't specific enough")))))
   
   (:method ((c LookCmd) (p Player) (l List))
-           (describe-for-user  (out-stream p) (location p)))
+           (describe-for-user  (out-stream p) (location p) *default-indentation-level*))
 
   (:method ((c GoCmd) (p Player) (l List))
            (cond ((null l)
