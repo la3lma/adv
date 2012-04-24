@@ -477,6 +477,7 @@ if no weapon can be found, nil is returned"
 			     (format (out-stream p) "~% Hm. Be more specific."))
 			    (t
 			     (let ((destination (car destinations)))
+;;  XXX Debugging output, remove asap
 ;;			       (format *standard-output* "~% object = ~s, destination = ~s (~s)" ob destination destination)
 ;;			       (format *standard-output* "~%     Pre movement  = ~s (~s) ~s" ob (inventory destination) (listp destination))
 			       
