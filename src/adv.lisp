@@ -97,7 +97,7 @@
 
   (:method ((stream t)(c Container))
 	   (format stream "~% Displaying a container")
-           (format stream "~a ~{~% ~a~}" (description c) (mapcar #'description (inventory c))))
+           (format stream "~a ~{~%  -> ~a~}" (description c) (mapcar #'description (inventory c))))
 
   (:method ((stream t)(i Describable))
            (format stream "~a" (description i)))
