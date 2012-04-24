@@ -465,14 +465,24 @@ if no weapon can be found, nil is returned"
   (:method ((c DropCmd) (p Player) (query List))
            (multiple-value-bind (object-desc destination-desc)
                (split-on-word (cdr query) '("on" "onto")) ;; XXX Extract into variable holding keywords
-	     (cond (destination-desc
-		    ;; A test to see if we can parse relational sentences
-		    (let ((ob          (identify object-desc     (inventory p)))
-			  (destination (identify destination-desc (inventory (location p)))))
-		      (format *standard-output* "~% object = ~s, destination = ~s (~s)" ob destination destination)
-		      (find-and-move (out-stream p) object-desc p destination "Dropped onto/into")))
+	     (cond ((not destination-desc)
+ 		    (find-and-move (out-stream p) query p (location p) "Dropped"))
 		   (t
-		    (find-and-move (out-stream p) query p (location p) "Dropped")))))
+		    ;; A test to see if we can parse relational sentences
+		    (let ((ob           (identify object-desc      (inventory p)))
+			  (destinations (identify destination-desc (inventory (location p)))))
+		      (cond ((null destinations)
+			     (format (out-stream p) "~% Hm. That's  a bit brief"))
+			    ((< 1 (length destinations))
+			     (format (out-stream p) "~% Hm. Be more specific."))
+			    (t
+			     (let ((destination (car destinations)))
+			       (format *standard-output* "~% object = ~s, destination = ~s (~s)" ob destination destination)
+			       (format *standard-output* "~%     Pre movement  = ~s (~s) ~s" ob (inventory destination) (listp destination))
+			       
+			       (find-and-move (out-stream p) object-desc p destination "Dropped onto/into")
+			       (format *standard-output* "~%     Post movement = ~s (~s)" ob  (inventory destination))))))))))
+
 
   (:method ((c FightCmd) (p Player) (query List))
            ;; Is the query on the format <target> (<with> <weapon>)?
@@ -580,6 +590,9 @@ if no weapon can be found, nil is returned"
 (defun identify (query objects)
   "Identify the objects described by the query in the list of objects,
    return null if no objecs could be identified"
+
+  ;; XXX Add typechecks here to 
+  ;;     fail fast!
 
   ;; Remove all stopwords from query
   (setf query  (remove-all-x query *stopwords* :test #'string-equal))
