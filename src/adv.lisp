@@ -99,20 +99,22 @@
   (:method ((stream t) (s String) (indent Integer))
 	   (format stream "~a" s))
 
+  (:method ((stream t) (l List) (indent Integer))
+	   (dolist (item l)
+	     (describe-for-user stream item (+ indent 2))))
+	   
   (:method ((stream t) (l Location) (indent Integer))
            (format stream "Location: ~A" (description l))
 	   (let ((inv (inventory l))
 		 (directions (mapcar #'car  (mapcar #'names  (navigation l)))))
 	     (when inv 
 	       (describe-for-user stream "You see" indent)
-	       (dolist (item inv)
-		 (describe-for-user stream item (+ indent 2)))) ;; XXX Use constant!
-		 ; (format stream "~% You see:~{~%  ~a~}." (mapcar #'describe-into-string inv)))
-	     (if directions
-		 (format stream "~%      exit~p:~{ ~a~^, ~}." (length directions) directions))))
+	       (describe-for-user stream inv  (+ indent 2)))
+	     (when directions
+	       (describe-for-user stream (format nil "exit~p:~{ ~a~^, ~}" (length directions) directions) indent ))))
 
   (:method ((stream t)(c Container)(indent Integer))
-	   ;; XXX The indentation should be according to some indentation level that should be
+	   ;; XXX The indenttion should be according to some indentation level that should be
 	   ;;     a parameter to the prettyprinter (describe-for-user)
            (format stream "~a" (description c))
 	   (dolist (item (inventory c))
@@ -122,10 +124,8 @@
            (format stream "~a" (description i)))
 
   (:method ((stream t)(p Player)(indent Integer))
-	   (let ((inv  (inventory p)))
-	     ;; XXX Do the same thing as for locations, also look into doing the -exact- same thing
-	     ;;     by adding a method for listing lists
-   	     (format stream "Inventory for player ~s: ~{~%  ~a~}." (description p) (mapcar #'description inv)))))
+	   (format stream "The player:  ~s," (description p))))
+
 
 
 (defgeneric move (Player List)
