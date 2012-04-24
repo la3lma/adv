@@ -90,27 +90,42 @@
 (defgeneric describe-for-user (stream describable indent)
   (:documentation "Describe something for a user")
 
+  (:method :before ((stream t) (l t) (indent Integer))
+	   ;; XXX This is inefficient use of the mighty Format
+           (format stream "~%")
+	   (dotimes (i indent)
+	     (format stream " ")))
+
+  (:method ((stream t) (s String) (indent Integer))
+	   (format stream "~a" s))
+
   (:method ((stream t) (l Location) (indent Integer))
-           (format stream "~% Location: ~A" (description l))
+           (format stream "Location: ~A" (description l))
 	   (let ((inv (inventory l))
 		 (directions (mapcar #'car  (mapcar #'names  (navigation l)))))
-	     (if inv 
-		 (format stream "~% You see:~{~%  ~a~}." (mapcar #'describe-into-string inv)))
+	     (when inv 
+	       (describe-for-user stream "You see" indent)
+	       (dolist (item inv)
+		 (describe-for-user stream item (+ indent 2)))) ;; XXX Use constant!
+		 ; (format stream "~% You see:~{~%  ~a~}." (mapcar #'describe-into-string inv)))
 	     (if directions
 		 (format stream "~%      exit~p:~{ ~a~^, ~}." (length directions) directions))))
 
   (:method ((stream t)(c Container)(indent Integer))
 	   ;; XXX The indentation should be according to some indentation level that should be
 	   ;;     a parameter to the prettyprinter (describe-for-user)
-           (format stream "% ~a" (description c))
+           (format stream "~a" (description c))
 	   (dolist (item (inventory c))
 	     (describe-for-user stream item (+ indent *container-indentation*))))
 
   (:method ((stream t)(i Describable)(indent Integer))
            (format stream "~a" (description i)))
 
-  (:method ((stream t)(i Player)(indent Integer))
-           (format stream "Inventory for ~s: ~{~%  ~a~}." (description i) (mapcar #'description (inventory i)))))
+  (:method ((stream t)(p Player)(indent Integer))
+	   (let ((inv  (inventory p)))
+	     ;; XXX Do the same thing as for locations, also look into doing the -exact- same thing
+	     ;;     by adding a method for listing lists
+   	     (format stream "Inventory for player ~s: ~{~%  ~a~}." (description p) (mapcar #'description inv)))))
 
 
 (defgeneric move (Player List)
