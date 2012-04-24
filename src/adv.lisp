@@ -85,6 +85,8 @@
     (describe-for-user outputstream describable *default-indentation-level*)
     (get-output-stream-string outputstream)))
 
+(defconstant *container-indentation* 2)
+
 (defgeneric describe-for-user (stream describable indent)
   (:documentation "Describe something for a user")
 
@@ -98,10 +100,11 @@
 		 (format stream "~%      exit~p:~{ ~a~^, ~}." (length directions) directions))))
 
   (:method ((stream t)(c Container)(indent Integer))
-	   (format stream "~% Displaying a container")
 	   ;; XXX The indentation should be according to some indentation level that should be
 	   ;;     a parameter to the prettyprinter (describe-for-user)
-           (format stream "~a ~{~%  -> ~a~}" (description c) (mapcar #'description (inventory c))))
+           (format stream "% ~a" (description c))
+	   (dolist (item (inventory c))
+	     (describe-for-user stream item (+ indent *container-indentation*))))
 
   (:method ((stream t)(i Describable)(indent Integer))
            (format stream "~a" (description i)))
