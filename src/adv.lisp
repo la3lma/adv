@@ -91,7 +91,6 @@
   (:documentation "Describe something for a user")
 
   (:method :before ((stream t) (l t) (indent Integer))
-	   ;; XXX This is inefficient use of the mighty Format
            (format stream "~%")
 	   (dotimes (i indent)
 	     (format stream " ")))
@@ -114,8 +113,6 @@
 	       (describe-for-user stream (format nil "exit~p:~{ ~a~^, ~}" (length directions) directions) indent ))))
 
   (:method ((stream t)(c Container)(indent Integer))
-	   ;; XXX The indenttion should be according to some indentation level that should be
-	   ;;     a parameter to the prettyprinter (describe-for-user)
            (format stream "~a" (description c))
 	   (dolist (item (inventory c))
 	     (describe-for-user stream item (+ indent *container-indentation*))))
@@ -481,7 +478,21 @@ if no weapon can be found, nil is returned"
   (:documentation "Apply a command to a player with some input parameters")
 
   (:method ((c TakeCmd) (p Player) (query List))
-           (find-and-move (out-stream p) query (location p) p "Got it"))
+           (multiple-value-bind (object-desc destination-desc)
+               (split-on-word (cdr query) '("from")) 
+	     (cond ((not destination-desc)
+		    (find-and-move (out-stream p) query (location p) p "Got it"))
+		   (t 
+		    (let ((ob           (identify object-desc      (inventory p)))
+			  (destinations (identify destination-desc (inventory (location p)))))
+		      (cond ((null destinations)
+			     (format (out-stream p) "~% Hm. That's  a bit brief."))
+			    ((< 1 (length destinations))
+			     (format (out-stream p) "~% Hm. Be more specific."))
+			    (t
+			     (let ((destination (car destinations)))
+			       (find-and-move (out-stream p) object-desc destination p "Dropped onto/into")))))))))
+
 
   (:method ((c DropCmd) (p Player) (query List))
            (multiple-value-bind (object-desc destination-desc)
@@ -498,12 +509,7 @@ if no weapon can be found, nil is returned"
 			     (format (out-stream p) "~% Hm. Be more specific."))
 			    (t
 			     (let ((destination (car destinations)))
-;;  XXX Debugging output, remove asap
-;;			       (format *standard-output* "~% object = ~s, destination = ~s (~s)" ob destination destination)
-;;			       (format *standard-output* "~%     Pre movement  = ~s (~s) ~s" ob (inventory destination) (listp destination))
-			       
-			       (find-and-move (out-stream p) object-desc p destination "Dropped onto/into")
-			       (format *standard-output* "~%     Post movement = ~s (~s)" ob  (inventory destination))))))))))
+			       (find-and-move (out-stream p) object-desc p destination "Dropped onto/into")))))))))
 
 
   (:method ((c FightCmd) (p Player) (query List))
