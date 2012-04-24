@@ -91,14 +91,13 @@
 	   (let ((inv (inventory l))
 		 (directions (mapcar #'car  (mapcar #'names  (navigation l)))))
 	     (if inv 
-		 (format stream "~% You see:~{~%  ~a~}." (mapcar #'description inv)))
+		 (format stream "~% You see:~{~%  ~a~}." (mapcar #'describe-into-string inv)))
 	     (if directions
 		 (format stream "~%      exit~p:~{ ~a~^, ~}." (length directions) directions))))
 
   (:method ((stream t)(c Container))
 	   (format stream "~% Displaying a container")
            (format stream "~a ~{~% ~a~}" (description c) (mapcar #'description (inventory c))))
-
 
   (:method ((stream t)(i Describable))
            (format stream "~a" (description i)))
