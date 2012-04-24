@@ -472,7 +472,7 @@ if no weapon can be found, nil is returned"
 		    (let ((ob           (identify object-desc      (inventory p)))
 			  (destinations (identify destination-desc (inventory (location p)))))
 		      (cond ((null destinations)
-			     (format (out-stream p) "~% Hm. That's  a bit brief"))
+			     (format (out-stream p) "~% Hm. That's  a bit brief."))
 			    ((< 1 (length destinations))
 			     (format (out-stream p) "~% Hm. Be more specific."))
 			    (t
