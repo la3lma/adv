@@ -97,6 +97,8 @@
 
   (:method ((stream t)(c Container))
 	   (format stream "~% Displaying a container")
+	   ;; XXX The indentation should be according to some indentation level that should be
+	   ;;     a parameter to the prettyprinter (describe-for-user)
            (format stream "~a ~{~%  -> ~a~}" (description c) (mapcar #'description (inventory c))))
 
   (:method ((stream t)(i Describable))

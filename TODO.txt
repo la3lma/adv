@@ -1,9 +1,6 @@
-o Clarify the thinking about transparent items.   In particular, it
-   should be possible to see items on a table, but that means that
-   a table can't be an "item", since items don't have
-   inventories. Perhaps we need a kind of item with an inventory,
-   a container?
-
+o Make the pretty-printer used by the "look" command obey an
+   indentation level, so that containers can be listed with proper
+   indentation.
 o When attacking a table, the program fails. Fix that (but first fail
    a test)
 o Put syntax code in a few very specific places, tie it to the
