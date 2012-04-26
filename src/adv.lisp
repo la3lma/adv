@@ -490,24 +490,24 @@ if no weapon can be found, nil is returned"
        (playerlocation     (location  player))
        (sourceinventory    (inventory player))
        (locationinventory  (inventory playerlocation)))
-    
+
     (multiple-value-bind (object-desc location-desc) 
 	(split-on-word (cdr query) splitwords) 
-      
-      (let ((object       (identify-uniquely stream (or object-desc query)  sourceinventory))
-	    (destination  (or (identify-uniquely stream location-desc locationinventory)
-			      playerlocation))
-	    (source       player))
 
+      (let ((destination 
+	     (if location-desc 
+		 (identify-uniquely stream location-desc locationinventory)
+	       playerlocation))
+	    (source       player))
 	(if reverse-direction-p
 	    (rotatef destination source))
-
-	(cond ((and object source destination
-		    (movement-ok object source destination))
-	       (move-object object source destination)
-	       (format stream  "~% ~a" ack))
-	      (t 
-	       (format stream  "~% ~a" nack)))))))
+	(let ((object (identify-uniquely stream (or object-desc query)  source)))
+	  (cond ((and object source destination
+		      (movement-ok object source destination))
+		 (move-object object source destination)
+		 (format stream  "~% ~a" ack))
+		(t 
+		 (format stream  "~% ~a" nack))))))))
 
 
   
