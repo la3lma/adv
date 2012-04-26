@@ -519,38 +519,11 @@ if no weapon can be found, nil is returned"
   (:method ((c TakeCmd) (p Player) (query List))
 	   (move-selected-a-in-b p query '("from") :reverse-direction-p t))
 
-           ;; (multiple-value-bind (object-desc destination-desc)
-           ;;     (split-on-word (cdr query) '("from")) 
-	   ;;   (cond ((not destination-desc)
-	   ;; 	    (find-and-move (out-stream p) query (location p) p "Got it"))
-	   ;; 	   (t 
-	   ;; 	    (let ((ob           (identify object-desc      (inventory p))) ;; XX Not used!!
-	   ;; 		  (destinations (identify destination-desc (inventory (location p)))))
-	   ;; 	      (cond ((null destinations)
-	   ;; 		     (format (out-stream p) "~% Hm. That's  a bit brief."))
-	   ;; 		    ((< 1 (length destinations))
-	   ;; 		     (format (out-stream p) "~% Hm. Be more specific."))
-	   ;; 		    (t
-	   ;; 		     (let ((destination (car destinations)))
-	   ;; 		       (find-and-move (out-stream p) object-desc destination p "Dropped onto/into")))))))))
-
-
   (:method ((c DropCmd) (p Player) (query List))
-           (multiple-value-bind (object-desc destination-desc)
-               (split-on-word (cdr query) '("on" "onto")) ;; XXX Extract into variable holding keywords
-	     (cond ((not destination-desc)
- 		    (find-and-move (out-stream p) query p (location p) "Dropped"))
-		   (t
-		    (let ((ob           (identify object-desc      (inventory p)))
-			  (destinations (identify destination-desc (inventory (location p)))))
-		      (cond ((null destinations)
-			     (format (out-stream p) "~% Hm. That's  a bit brief."))
-			    ((< 1 (length destinations))
-			     (format (out-stream p) "~% Hm. Be more specific."))
-			    (t
-			     (let ((destination (car destinations)))
-			       (find-and-move (out-stream p) object-desc p destination "Dropped onto/into")))))))))
+	   (move-selected-a-in-b p query '("on" "onto")))
 
+  ;; XXX The fight and movement sentences can be parsed using very similar
+  ;;     structures, perhaps that should be exploited (or perhaps not)
 
   (:method ((c FightCmd) (p Player) (query List))
            ;; Is the query on the format <target> (<with> <weapon>)?
