@@ -484,33 +484,30 @@ if no weapon can be found, nil is returned"
 	   nil)
 	  (t (first objects)))))
 
-;; ;; XXX Assumption, we're moving things from player's inventory
-;; ;;     to somewhere else.  Later we'll relax that assumptionl
-
 (defun  move-selected-a-in-b (player reverse-direction-p query splitwords ack nack)
   (let* 
       ((stream             (stream player))
        (playerlocation     (location  player))
        (sourceinventory    (inventory player))
        (locationinventory  (inventory playerlocation)))
-
+    
     (multiple-value-bind (object-desc location-desc) 
 	(split-on-word (cdr query) splitwords) 
       
       (let ((object       (identify-uniquely stream (or object-desc query)  sourceinventory))
 	    (destination  (or (identify-uniquely stream location-desc locationinventory)
-			      playerlocation)))
+			      playerlocation))
+	    (source       player))
 
 	(if reverse-direction-p
-	    (rotatef object destination))
+	    (rotatef destination source))
 
-	(cond ((and object destination
-		    (movement-ok object player destination))
-	       ;; (move-object object player destination)
+	(cond ((and object source destination
+		    (movement-ok object source destination))
+	       (move-object object source destination)
 	       (format stream  "~% ~a" ack))
 	      (t 
 	       (format stream  "~% ~a" nack)))))))
-
 
 
   
