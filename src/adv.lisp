@@ -121,7 +121,7 @@
            (format stream "~a" (description i)))
 
   (:method ((stream t)(p Player)(indent Integer))
-	   (format stream "The player:  ~s," (description p))))
+	   (format stream " ~s," (description p))))
 
 
 
@@ -474,6 +474,46 @@ if no weapon can be found, nil is returned"
   "The defender counterattacks against the attacker, if possible"
   (attack defender attacker (pick-most-appropriate-weapon defender attacker)))
 
+(defun identify-uniquely (stream query inventory)
+  (let ((objects (identify query inventory)))
+    (cond ((null objects)
+	   (format stream "~% Couldn't find anything like that (~s)" query)
+	   nil)
+	  ((> 1 (length objects))
+	   (format stream  "~% Hmmm. ~s is ambigous. More than one thing can be described that way. Please be more specific." query)
+	   nil)
+	  (t (first objects)))))
+
+;; ;; XXX Assumption, we're moving things from player's inventory
+;; ;;     to somewhere else.  Later we'll relax that assumptionl
+
+(defun  move-selected-a-in-b (player reverse-direction-p query splitwords ack nack)
+  (let* 
+      ((stream             (stream player))
+       (playerlocation     (location  player))
+       (sourceinventory    (inventory player))
+       (locationinventory  (inventory playerlocation)))
+
+    (multiple-value-bind (object-desc location-desc) 
+	(split-on-word (cdr query) splitwords) 
+      
+      (let ((object       (identify-uniquely stream (or object-desc query)  sourceinventory))
+	    (destination  (or (identify-uniquely stream location-desc locationinventory)
+			      playerlocation)))
+
+	(if reverse-direction-p
+	    (rotatef object destination))
+
+	(cond ((and object destination
+		    (movement-ok object player destination))
+	       ;; (move-object object player destination)
+	       (format stream  "~% ~a" ack))
+	      (t 
+	       (format stream  "~% ~a" nack)))))))
+
+
+
+  
 (defgeneric applyCmd (Command Player List)
   (:documentation "Apply a command to a player with some input parameters")
 
@@ -483,7 +523,7 @@ if no weapon can be found, nil is returned"
 	     (cond ((not destination-desc)
 		    (find-and-move (out-stream p) query (location p) p "Got it"))
 		   (t 
-		    (let ((ob           (identify object-desc      (inventory p)))
+		    (let ((ob           (identify object-desc      (inventory p))) ;; XX Not used!!
 			  (destinations (identify destination-desc (inventory (location p)))))
 		      (cond ((null destinations)
 			     (format (out-stream p) "~% Hm. That's  a bit brief."))
@@ -500,7 +540,6 @@ if no weapon can be found, nil is returned"
 	     (cond ((not destination-desc)
  		    (find-and-move (out-stream p) query p (location p) "Dropped"))
 		   (t
-		    ;; A test to see if we can parse relational sentences
 		    (let ((ob           (identify object-desc      (inventory p)))
 			  (destinations (identify destination-desc (inventory (location p)))))
 		      (cond ((null destinations)
