@@ -475,7 +475,9 @@ if no weapon can be found, nil is returned"
   (attack defender attacker (pick-most-appropriate-weapon defender attacker)))
 
 (defun identify-uniquely (stream query inventory)
-  (let ((objects (identify query inventory)))
+  (let ((objects (identify query (if (not (listp inventory)) ;; XXX Butt ugly polymorphism! Fix!
+				     (inventory inventory)
+				   inventory))))
     (cond ((null objects)
 	   (format stream "~% Couldn't find anything like that (~s)" query)
 	   nil)
@@ -484,12 +486,12 @@ if no weapon can be found, nil is returned"
 	   nil)
 	  (t (first objects)))))
 
-(defun  move-selected-a-in-b (player reverse-direction-p query splitwords ack nack)
+(defun  move-selected-a-in-b (player query splitwords  &key (ack "Ok, moved.") (nack "No can do.") (reverse-direction-p nil))
   (let* 
-      ((stream             (stream player))
-       (playerlocation     (location  player))
-       (sourceinventory    (inventory player))
-       (locationinventory  (inventory playerlocation)))
+      ((stream             (out-stream player))
+       (playerlocation     (location   player))
+       (sourceinventory    (inventory  player))
+       (locationinventory  (inventory  playerlocation)))
 
     (multiple-value-bind (object-desc location-desc) 
 	(split-on-word (cdr query) splitwords) 
@@ -515,20 +517,22 @@ if no weapon can be found, nil is returned"
   (:documentation "Apply a command to a player with some input parameters")
 
   (:method ((c TakeCmd) (p Player) (query List))
-           (multiple-value-bind (object-desc destination-desc)
-               (split-on-word (cdr query) '("from")) 
-	     (cond ((not destination-desc)
-		    (find-and-move (out-stream p) query (location p) p "Got it"))
-		   (t 
-		    (let ((ob           (identify object-desc      (inventory p))) ;; XX Not used!!
-			  (destinations (identify destination-desc (inventory (location p)))))
-		      (cond ((null destinations)
-			     (format (out-stream p) "~% Hm. That's  a bit brief."))
-			    ((< 1 (length destinations))
-			     (format (out-stream p) "~% Hm. Be more specific."))
-			    (t
-			     (let ((destination (car destinations)))
-			       (find-and-move (out-stream p) object-desc destination p "Dropped onto/into")))))))))
+	   (move-selected-a-in-b p query '("from") :reverse-direction-p t))
+
+           ;; (multiple-value-bind (object-desc destination-desc)
+           ;;     (split-on-word (cdr query) '("from")) 
+	   ;;   (cond ((not destination-desc)
+	   ;; 	    (find-and-move (out-stream p) query (location p) p "Got it"))
+	   ;; 	   (t 
+	   ;; 	    (let ((ob           (identify object-desc      (inventory p))) ;; XX Not used!!
+	   ;; 		  (destinations (identify destination-desc (inventory (location p)))))
+	   ;; 	      (cond ((null destinations)
+	   ;; 		     (format (out-stream p) "~% Hm. That's  a bit brief."))
+	   ;; 		    ((< 1 (length destinations))
+	   ;; 		     (format (out-stream p) "~% Hm. Be more specific."))
+	   ;; 		    (t
+	   ;; 		     (let ((destination (car destinations)))
+	   ;; 		       (find-and-move (out-stream p) object-desc destination p "Dropped onto/into")))))))))
 
 
   (:method ((c DropCmd) (p Player) (query List))
