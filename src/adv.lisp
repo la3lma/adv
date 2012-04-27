@@ -628,12 +628,21 @@ if no weapon can be found, nil is returned"
         unless (find i r :test test)
         collect i))
 
+
+(defun assert-list-of-strings (query)
+  "If the incoming  parameter isn't a list of strings, an error is signalled"
+  (if (not (listp query))
+      (error "query should be a list, but isn't ~s" query))
+  (dolist (l query)
+    (if (not (stringp l))
+	(error "Content of query should be a string, but this item isn't ~s" l))))
+
+
 (defun identify (query objects)
   "Identify the objects described by the query in the list of objects,
    return null if no objecs could be identified"
 
-  ;; XXX Add typechecks here to 
-  ;;     fail fast!
+  (assert-list-of-strings query)
 
   ;; Remove all stopwords from query
   (setf query  (remove-all-x query *stopwords* :test #'string-equal))
@@ -686,7 +695,6 @@ if no weapon can be found, nil is returned"
                (list (make-instance 'navigation :names names :destination  destination)))))
 
 
-
 ;; XXX This function is very brittle, it should have more parameter checking,
 ;;     and it should be iterative, not tail recursive (although that isn't so
 ;;     awful in itself).
@@ -708,10 +716,15 @@ if no weapon can be found, nil is returned"
 		   (if (null reverse-dir)
 		       (error "Reverse direction can't be null"))
 
-		   (adv:set-navigation source destination  direction)
-		   (adv:set-navigation destination source  reverse-dir)
-		   (np (cddr path))))))
+		   (set-navigation source destination  direction)
+		   (set-navigation destination source  reverse-dir)
+		   (np (cddr path))))))  ;; Essentially a "do-cddrs control structure", or "do-overlapping-tuples (:tuplesize 3 :stride 2)"
     (np path)))
+
+;;XXX (do-overlapping-tuples (path :tuplesize 3 :stride 2 :enforce-non-null-params t)
+;;        (source direction destination)
+;;      (let ((reverse-dir (reverse-direction direction))
+;;           (if (null reverse-dir) ...
 
 
 
