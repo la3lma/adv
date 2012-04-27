@@ -629,13 +629,13 @@ if no weapon can be found, nil is returned"
         collect i))
 
 
-(defun assert-list-of-strings (query)
+(defun assert-list-of-strings (arg)
   "If the incoming  parameter isn't a list of strings, an error is signalled"
-  (if (not (listp query))
-      (error "query should be a list, but isn't ~s" query))
-  (dolist (l query)
+  (if (not (listp arg))
+      (error "arg should be a list, but isn't ~s" arg))
+  (dolist (l arg)
     (if (not (stringp l))
-	(error "Content of query should be a string, but this item isn't ~s" l))))
+	(error "Content of arg should be a string, but this item isn't ~s" l))))
 
 
 (defun identify (query objects)
