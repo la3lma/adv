@@ -745,7 +745,9 @@ if no weapon can be found, nil is returned"
 				  (cons class (cons :description (cons description  params)))))))
 	 ;; XXX  This flet could be made much simpler!
 
-	 (flet ((new-location (description &rest location-body)
+	 (flet ((new-instance (description class &rest location-body)
+			      (create-internalized-item class description location-body))
+		(new-location (description &rest location-body)
 			(create-internalized-item 'adv::Location description location-body))
 		(new-item (description &rest item-body)
 			(create-internalized-item 'adv::Item description item-body))
